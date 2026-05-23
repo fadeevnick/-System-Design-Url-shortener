@@ -28,6 +28,7 @@
 | 005 | [[005-news-feed]] — News Feed (Twitter / Instagram-like) | social | [[fanout-strategies]], [[materialized-view]], [[pagination]], [[caching-strategies]] |
 | 006 | [[006-web-crawler]] — Web Crawler (Googlebot / Common Crawl) | data-pipeline | [[url-frontier]], [[content-deduplication]], [[consistent-hashing]], [[event-driven-architecture]] |
 | 007 | [[007-notification-service]] — Notification Service (push / email / SMS) | messaging | [[retry-with-backoff]], [[dead-letter-queue]], [[idempotency-key]], [[rate-limiting-algorithms]], [[event-driven-architecture]] |
+| 008 | [[008-distributed-file-storage]] — Distributed File Storage (Dropbox / Google Drive) | storage | [[content-addressable-storage]], [[content-deduplication]], [[consistent-hashing]], [[long-lived-connections]] |
 
 ## Patterns
 
@@ -50,6 +51,7 @@
 ### Distributed Coordination & Scheduling
 - [[url-frontier]] — two-level priority queue с politeness для distributed crawling.
 - [[content-deduplication]] — Bloom Filter, SimHash / MinHash, LSH для exact и near-duplicate detection.
+- [[content-addressable-storage]] — хранение блоков по SHA-256 хэшу: автоматическая дедупликация, immutability, GC.
 
 ### Data & Storage
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).

@@ -14,6 +14,8 @@
 
 ## C
 
+- **CAS (Content-Addressable Storage)** — схема хранения, в которой адрес объекта = SHA-256 его содержимого. Автоматическая дедупликация, immutability, integrity check. See [[content-addressable-storage]].
+- **CDC (Content-Defined Chunking)** — алгоритм нарезки файла на блоки по «природным» границам контента (rolling hash / Rabin), устойчив к сдвигу. Лучшая дедупликация, чем fixed-size.
 - **Circuit Breaker** — паттерн отказоустойчивости: автомат с тремя состояниями (Closed → Open → Half-Open). В Open-состоянии вызовы к сбойному downstream блокируются немедленно (fail-fast), без ожидания таймаута. Связан с [[retry-with-backoff]].
 - **Cache-Aside (Lazy loading)** — паттерн кэширования: приложение читает кэш, при промахе идёт в БД и кладёт в кэш. См. [[caching-strategies]].
 - **Celebrity Problem** — feature социальных сетей: пользователи с миллионами followers создают write storm при fanout-on-write. Решается hybrid push/pull. См. [[fanout-strategies]].
@@ -30,6 +32,7 @@
 
 ## E
 
+- **Envelope Encryption** — паттерн шифрования: данные зашифрованы data key (DEK), сам DEK зашифрован key-encryption key (KEK) из KMS. Позволяет ротировать KEK без перешифровки данных.
 - **Event-Driven Architecture (EDA)** — архитектурный стиль, в котором компоненты общаются через события на шине (Kafka, NATS, RabbitMQ). См. [[event-driven-architecture]].
 - **Event bus** — шина событий: брокер, через который сервисы публикуют и подписываются на события.
 - **Exponential Backoff** — стратегия ожидания между повторными попытками: задержка удваивается с каждой попыткой (`base * 2^n`). Применяется вместе с jitter для рассеивания нагрузки. See [[retry-with-backoff]].
@@ -88,7 +91,8 @@
 
 ## P
 
-- **Pagination** — постраничная выдача больших коллекций (offset / cursor / keyset). См. [[pagination]].
+- **Pagination**
+- **Presigned URL** — временный URL с HMAC-подписью, дающий право на конкретную операцию (PUT/GET) в Object Store (S3) без раскрытия credentials клиенту. TTL обычно 15 минут — 1 час. — постраничная выдача больших коллекций (offset / cursor / keyset). См. [[pagination]].
 - **Presence** — индикатор online-статуса пользователя. Реализуется обычно через Redis с TTL и heartbeat.
 - **Pub/Sub** — модель «publish/subscribe»: publisher отправляет в topic, subscribers подписаны на topic. Развязывает sender и receiver.
 - **Push vs Pull** — модель доставки данных между системами. Push: отправитель инициирует доставку (webhook). Pull: получатель сам запрашивает данные (polling).
