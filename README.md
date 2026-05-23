@@ -30,6 +30,7 @@
 | 007 | [[007-notification-service]] — Notification Service (push / email / SMS) | messaging | [[retry-with-backoff]], [[dead-letter-queue]], [[idempotency-key]], [[rate-limiting-algorithms]], [[event-driven-architecture]] |
 | 008 | [[008-distributed-file-storage]] — Distributed File Storage (Dropbox / Google Drive) | storage | [[content-addressable-storage]], [[content-deduplication]], [[consistent-hashing]], [[long-lived-connections]] |
 | 009 | [[009-search-autocomplete]] — Search Autocomplete / Typeahead (Google / YouTube) | search | [[trie-prefix-index]], [[caching-strategies]], [[consistent-hashing]] |
+| 010 | [[010-video-streaming]] — Video Streaming (YouTube / Netflix) | media | [[adaptive-bitrate-streaming]], [[content-addressable-storage]], [[caching-strategies]], [[event-driven-architecture]] |
 
 ## Patterns
 
@@ -54,6 +55,7 @@
 - [[content-deduplication]] — Bloom Filter, SimHash / MinHash, LSH для exact и near-duplicate detection.
 - [[content-addressable-storage]] — хранение блоков по SHA-256 хэшу: автоматическая дедупликация, immutability, GC.
 - [[trie-prefix-index]] — trie с top-K per node для autocomplete: O(P) lookup, шардинг, batch rebuild, CDN кэширование.
+- [[adaptive-bitrate-streaming]] — HLS/DASH, bitrate ladder, сегменты, ABR алгоритмы (BBA/BOLA), LL-HLS.
 
 ### Data & Storage
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).

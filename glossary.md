@@ -4,6 +4,8 @@
 
 ## A
 
+- **ABR (Adaptive Bitrate Streaming)** — техника доставки видео: контент закодирован в N качествах, клиент динамически переключается между ними по состоянию буфера / скорости канала. Стандарты: HLS, MPEG-DASH. See [[adaptive-bitrate-streaming]].
+- **AV1** — открытый видеокодек (Alliance for Open Media): ~30% эффективнее H.265 при том же качестве. Используется YouTube, Netflix. Требует дорогого кодирования, но дешевле передачи.
 - **API Gateway** — единая точка входа для клиентских запросов. Отвечает за rate limiting, аутентификацию, авторизацию, метрики, маршрутизацию в downstream-сервисы.
 - **At-least-once delivery** — гарантия, что сообщение будет доставлено хотя бы раз (возможны дубли). Требует [[idempotency-key]] на consumer-стороне.
 
@@ -26,6 +28,7 @@
 
 ## D
 
+- **DAG (Directed Acyclic Graph) Pipeline** — ориентированный граф без циклов, описывающий зависимости задач. В transcoding: split → [transcode_240p, transcode_720p, ...] → merge. Задачи без зависимостей выполняются параллельно.
 - **Dead-Letter Queue (DLQ)** — очередь для сообщений, которые не удалось обработать после исчерпания ретраев. Изолирует «токсичные» сообщения, позволяет анализировать и делать replay. See [[dead-letter-queue]].
 - **DKIM (DomainKeys Identified Mail)** — механизм подписи email-заголовков приватным ключом домена; получатель проверяет через DNS. Часть email deliverability трiade: SPF + DKIM + DMARC.
 - **DMARC** — политика обработки писем, не прошедших SPF/DKIM: `none`, `quarantine`, `reject`. Публикуется как DNS TXT запись.
@@ -54,6 +57,9 @@
 ## H
 
 - **Hash Ring**
+- **HLS (HTTP Live Streaming)** — стандарт Apple для ABR: манифест `.m3u8` + сегменты `.ts` / `.m4s`. Совместим с любым HTTP/CDN. See [[adaptive-bitrate-streaming]].
+
+
 
  — структура для consistent hashing: ключи и ноды мапятся в одно числовое кольцо (0..2^32-1).
 
