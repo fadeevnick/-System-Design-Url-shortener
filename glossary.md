@@ -34,6 +34,7 @@
 ## D
 
 - **DAG (Directed Acyclic Graph) Pipeline**
+- **Deadlock** — circular dependency между процессами, каждый ждёт ресурс занятый другим. Предотвращение: lock ordering, timeout + release + retry.
 - **Double-Entry Ledger** — каждая транзакция = debit одного счёта + credit другого на равную сумму. Append-only. Баланс = SUM. Нарушение balance invariant = ошибка. See [[double-entry-ledger]]. — ориентированный граф без циклов, описывающий зависимости задач. В transcoding: split → [transcode_240p, transcode_720p, ...] → merge. Задачи без зависимостей выполняются параллельно.
 - **Dead-Letter Queue (DLQ)** — очередь для сообщений, которые не удалось обработать после исчерпания ретраев. Изолирует «токсичные» сообщения, позволяет анализировать и делать replay. See [[dead-letter-queue]].
 - **DKIM (DomainKeys Identified Mail)** — механизм подписи email-заголовков приватным ключом домена; получатель проверяет через DNS. Часть email deliverability трiade: SPF + DKIM + DMARC.
@@ -50,6 +51,7 @@
 ## F
 
 - **Fail-closed**
+- **Fencing Token** — монотонно возрастающий токен, выдав��емый lock сервисом. Ресурс отклоняет запросы с токеном ≤ уже виденного → stale lock holder не может навредить. See [[fencing-token]].
 - **Four Golden Signals (Google SRE)** — четыре ключевые метрики сервиса: Latency (p99 ответа), Traffic (RPS), Errors (rate 5xx), Saturation (CPU%, queue depth). Минимальный набор для мониторинга любого сервиса. — стратегия при отказе зависимости: блокировать запрос. Используется для критичных операций (платежи). Trade-off: сбой зависимости = outage.
 - **Fail-open** — стратегия при отказе зависимости: пропускать запрос как будто проверка прошла. Default для не-критичных read-paths.
 - **Fanout-on-Read (Pull)** — модель fanout: сообщение хранится один раз, получатель «собирает» ленту при чтении. Дешёвый write, дорогой read. См. [[fanout-strategies]].
@@ -93,6 +95,7 @@
 
 ## L
 
+- **Lease** — временное право владения ресурсом с автоматическим истечением (TTL). В distributed lock: holder продлевает lease пока жив; смерть holder'а → lease истекает → lock освобождается.
 - **Leaky Bucket**
 - **Log-Structured Storage** — хранение данных только через append в конец файла. Sequential writes быстрее random в 100×. Основа Kafka, WAL, LSM tree. See [[log-structured-storage]].
 - **LSM Tree (Log-Structured Merge Tree)** — структура для key-value storage: writes → MemTable → SSTables (L0→L1→...). Compaction мёрджит уровни. Используется в RocksDB, Cassandra, LevelDB. — алгоритм rate limiting / traffic shaping: запросы стоят в очереди и обрабатываются с constant rate. Сглаживает burst. См. [[rate-limiting-algorithms]].
