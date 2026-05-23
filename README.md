@@ -23,6 +23,7 @@
 |-----|----------------------------------------------------|--------------|-------------------------------------------------------------|
 | 001 | [[001-order-backend-marketplace]] — Order Backend для маркетплейса (Amazon-like) | e-commerce   | [[outbox]], [[idempotency-key]], [[saga]], [[event-driven-architecture]], [[orchestration-vs-choreography]] |
 | 002 | [[002-url-shortener]] — URL Shortener (TinyURL / Bitly) | web/storage  | [[id-generation]], [[caching-strategies]], [[consistent-hashing]] |
+| 003 | [[003-rate-limiter]] — Rate Limiter | infrastructure | [[rate-limiting-algorithms]], [[caching-strategies]], [[consistent-hashing]] |
 
 ## Patterns
 
@@ -30,6 +31,7 @@
 - [[outbox]] — Transactional Outbox: гарантированная доставка событий в брокер.
 - [[idempotency-key]] — защита от дублирующих запросов через клиентский ключ.
 - [[saga]] — распределённые транзакции через локальные транзакции + компенсации.
+- [[rate-limiting-algorithms]] — token bucket, leaky bucket, sliding window, fixed window.
 
 ### Architectural Styles
 - [[event-driven-architecture]] — система, где компоненты общаются через события на шине.
