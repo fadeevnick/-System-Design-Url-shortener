@@ -19,9 +19,10 @@
 
 ## Case Studies
 
-| ID  | Title                                              | Domain     | Patterns                                                    |
-|-----|----------------------------------------------------|------------|-------------------------------------------------------------|
-| 001 | [[001-order-backend-marketplace]] — Order Backend для маркетплейса (Amazon-like) | e-commerce | [[outbox]], [[idempotency-key]], [[saga]], [[event-driven-architecture]] |
+| ID  | Title                                              | Domain       | Patterns                                                    |
+|-----|----------------------------------------------------|--------------|-------------------------------------------------------------|
+| 001 | [[001-order-backend-marketplace]] — Order Backend для маркетплейса (Amazon-like) | e-commerce   | [[outbox]], [[idempotency-key]], [[saga]], [[event-driven-architecture]], [[orchestration-vs-choreography]] |
+| 002 | [[002-url-shortener]] — URL Shortener (TinyURL / Bitly) | web/storage  | [[id-generation]], [[caching-strategies]], [[consistent-hashing]] |
 
 ## Patterns
 
@@ -33,6 +34,11 @@
 ### Architectural Styles
 - [[event-driven-architecture]] — система, где компоненты общаются через события на шине.
 - [[orchestration-vs-choreography]] — сравнение двух стилей координации сервисов.
+
+### Data & Storage
+- [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).
+- [[caching-strategies]] — cache-aside, read-through, write-through, refresh-ahead, инвалидация.
+- [[consistent-hashing]] — шардинг через hash ring с virtual nodes.
 
 ## Glossary
 
