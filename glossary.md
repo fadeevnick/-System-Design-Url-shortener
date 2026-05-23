@@ -16,6 +16,7 @@
 
 ## C
 
+- **Cardinality (TSDB)** — количество уникальных time series. Взрывная кардинальность (high-uniqueness labels: user_id, request_id) убивает любой TSDB за счёт OOM. Ключевое ограничение при проектировании метрик.
 - **CAS (Content-Addressable Storage)**
 - **Chargeback** — оспаривание транзакции покупателем через банк. Банк возвращает деньги покупателю; продавец должен предоставить доказательства (delivery proof, order confirmation) или теряет сумму + штраф. — схема хранения, в которой адрес объекта = SHA-256 его содержимого. Автоматическая дедупликация, immutability, integrity check. See [[content-addressable-storage]].
 - **CDC (Content-Defined Chunking)** — алгоритм нарезки файла на блоки по «природным» границам контента (rolling hash / Rabin), устойчив к сдвигу. Лучшая дедупликация, чем fixed-size.
@@ -47,7 +48,8 @@
 
 ## F
 
-- **Fail-closed** — стратегия при отказе зависимости: блокировать запрос. Используется для критичных операций (платежи). Trade-off: сбой зависимости = outage.
+- **Fail-closed**
+- **Four Golden Signals (Google SRE)** — четыре ключевые метрики сервиса: Latency (p99 ответа), Traffic (RPS), Errors (rate 5xx), Saturation (CPU%, queue depth). Минимальный набор для мониторинга любого сервиса. — стратегия при отказе зависимости: блокировать запрос. Используется для критичных операций (платежи). Trade-off: сбой зависимости = outage.
 - **Fail-open** — стратегия при отказе зависимости: пропускать запрос как будто проверка прошла. Default для не-критичных read-paths.
 - **Fanout-on-Read (Pull)** — модель fanout: сообщение хранится один раз, получатель «собирает» ленту при чтении. Дешёвый write, дорогой read. См. [[fanout-strategies]].
 - **Fanout-on-Write (Push)** — модель fanout: сообщение копируется в inbox каждого получателя при отправке. Дорогой write, дешёвый read. См. [[fanout-strategies]].
@@ -55,7 +57,8 @@
 
 ## G
 
-- **Geohash** — Base32-строка, кодирующая (lat, lng) через чередование бит широты и долготы. Общий префикс = близкие ячейки. Boundary problem: точки через границу имеют разный префикс → нужны 8 соседей. See [[geospatial-index]].
+- **Geohash**
+- **Gorilla Compression** — алгоритм сжатия временных рядов (Facebook, 2015): delta-of-delta для timestamp (~1.37 бит vs 64), XOR для значений (~3.5 байт vs 16). Используется в Prometheus, InfluxDB. See [[time-series-storage]]. — Base32-строка, кодирующая (lat, lng) через чередование бит широты и долготы. Общий префикс = близкие ячейки. Boundary problem: точки через границу имеют разный префикс → нужны 8 соседей. See [[geospatial-index]].
 - **Geofencing** — триггер события при входе/выходе объекта из географического полигона или ячейки (набора geohash).
 - **GIST Index** — обобщённый поисковый индекс в Postgres. Используется PostGIS для spatial queries (ST_DWithin, ST_Within).
 - **gRPC**

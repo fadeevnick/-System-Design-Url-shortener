@@ -34,6 +34,7 @@
 | 011 | [[011-proximity-service]] — Proximity Service (Yelp / Uber) | geo | [[geospatial-index]], [[caching-strategies]], [[consistent-hashing]] |
 | 012 | [[012-payment-system]] — Payment System (Stripe / Airbnb Pay) | fintech | [[double-entry-ledger]], [[idempotency-key]], [[outbox]], [[saga]], [[retry-with-backoff]] |
 | 013 | [[013-distributed-message-queue]] — Distributed Message Queue (Kafka / RabbitMQ) | messaging | [[log-structured-storage]], [[dead-letter-queue]], [[event-driven-architecture]], [[consistent-hashing]] |
+| 014 | [[014-metrics-monitoring]] — Metrics Monitoring & Alerting (Prometheus / Datadog) | observability | [[time-series-storage]], [[consistent-hashing]], [[event-driven-architecture]] |
 
 ## Patterns
 
@@ -62,6 +63,7 @@
 - [[adaptive-bitrate-streaming]] — HLS/DASH, bitrate ladder, сегменты, ABR алгоритмы (BBA/BOLA), LL-HLS.
 - [[geospatial-index]] — Geohash / QuadTree / S2: сравнение, boundary problem, Redis GEOADD, precision table.
 - [[log-structured-storage]] — append-only log, segment files, zero-copy sendfile, sparse index, log compaction, LSM tree.
+- [[time-series-storage]] — Gorilla compression (delta-of-delta, XOR), chunk-based TSDB, inverted index, downsampling, cardinality.
 
 ### Data & Storage
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).
