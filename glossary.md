@@ -20,6 +20,8 @@
 - **Chargeback** — оспаривание транзакции покупателем через банк. Банк возвращает деньги покупателю; продавец должен предоставить доказательства (delivery proof, order confirmation) или теряет сумму + штраф. — схема хранения, в которой адрес объекта = SHA-256 его содержимого. Автоматическая дедупликация, immutability, integrity check. See [[content-addressable-storage]].
 - **CDC (Content-Defined Chunking)** — алгоритм нарезки файла на блоки по «природным» границам контента (rolling hash / Rabin), устойчив к сдвигу. Лучшая дедупликация, чем fixed-size.
 - **Circuit Breaker** — паттерн отказоустойчивости: автомат с тремя состояниями (Closed → Open → Half-Open). В Open-состоянии вызовы к сбойному downstream блокируются немедленно (fail-fast), без ожидания таймаута. Связан с [[retry-with-backoff]].
+- **Consumer Group (Kafka)** — группа consumer'ов, делящих партиции топика: каждая партиция достаётся ровно одному consumer'у в группе. Параллелизм = число партиций. Разные группы читают независимо.
+- **Consumer Lag** — отставание consumer от leader: `end_offset - committed_offset`. Ключевая метрика здоровья Kafka pipeline; рост лага = consumer не справляется.
 - **Cache-Aside (Lazy loading)** — паттерн кэширования: приложение читает кэш, при промахе идёт в БД и кладёт в кэш. См. [[caching-strategies]].
 - **Celebrity Problem** — feature социальных сетей: пользователи с миллионами followers создают write storm при fanout-on-write. Решается hybrid push/pull. См. [[fanout-strategies]].
 - **Cursor-Based Pagination** — пагинация через cursor (ID/timestamp последнего элемента), стабильна к insertions и быстра при глубоких страницах. См. [[pagination]].
@@ -71,7 +73,8 @@
 
 ## I
 
-- **Idempotency Key** — клиентский ключ, по которому сервер дедуплицирует повторные запросы. См. [[idempotency-key]].
+- **Idempotency Key**
+- **ISR (In-Sync Replicas)** — подмножество реплик Kafka, не отстающих от лидера. Сообщение считается зафиксированным, когда все ISR подтвердили запись. Уменьшение ISR = риск потери данных. See [[013-distributed-message-queue]]. — клиентский ключ, по которому сервер дедуплицирует повторные запросы. См. [[idempotency-key]].
 - **Idempotent operation** — операция, повторное выполнение которой даёт тот же результат, что и однократное.
 
 ## J
@@ -84,7 +87,9 @@
 
 ## L
 
-- **Leaky Bucket** — алгоритм rate limiting / traffic shaping: запросы стоят в очереди и обрабатываются с constant rate. Сглаживает burst. См. [[rate-limiting-algorithms]].
+- **Leaky Bucket**
+- **Log-Structured Storage** — хранение данных только через append в конец файла. Sequential writes быстрее random в 100×. Основа Kafka, WAL, LSM tree. See [[log-structured-storage]].
+- **LSM Tree (Log-Structured Merge Tree)** — структура для key-value storage: writes → MemTable → SSTables (L0→L1→...). Compaction мёрджит уровни. Используется в RocksDB, Cassandra, LevelDB. — алгоритм rate limiting / traffic shaping: запросы стоят в очереди и обрабатываются с constant rate. Сглаживает burst. См. [[rate-limiting-algorithms]].
 - **Long-Lived Connection** — persistent двунаправленный канал client ↔ server, удерживающийся минутами/часами (WebSocket, SSE, gRPC streaming). См. [[long-lived-connections]].
 - **LSH (Locality Sensitive Hashing)** — техника для быстрого поиска близких объектов: похожие fingerprint'ы попадают в один bucket. См. [[content-deduplication]].
 
