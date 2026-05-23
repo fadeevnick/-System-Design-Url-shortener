@@ -36,6 +36,7 @@
 | 013 | [[013-distributed-message-queue]] — Distributed Message Queue (Kafka / RabbitMQ) | messaging | [[log-structured-storage]], [[dead-letter-queue]], [[event-driven-architecture]], [[consistent-hashing]] |
 | 014 | [[014-metrics-monitoring]] — Metrics Monitoring & Alerting (Prometheus / Datadog) | observability | [[time-series-storage]], [[consistent-hashing]], [[event-driven-architecture]] |
 | 015 | [[015-leaderboard]] — Leaderboard (Gaming / Live Scoring) | gaming | [[sorted-set-index]], [[caching-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 016 | [[016-distributed-cache]] — Distributed Cache (Redis Cluster Design) | infrastructure | [[cache-stampede]], [[caching-strategies]], [[consistent-hashing]] |
 
 ## Patterns
 
@@ -47,6 +48,7 @@
 - [[retry-with-backoff]] — exponential backoff + jitter (Full/Equal/Decorrelated), retry budgets, Circuit Breaker связка.
 - [[dead-letter-queue]] — изоляция необрабатываемых сообщений, metadata, replay flow, broker comparison.
 - [[double-entry-ledger]] — двойная запись, append-only, balance snapshot, reconciliation, exactly-once via idempotency.
+- [[cache-stampede]] — thundering herd при истечении TTL: mutex/singleflight, probabilistic early expiration, stale-while-revalidate, L1 local tier.
 
 ### Architectural Styles
 - [[event-driven-architecture]] — система, где компоненты общаются через события на шине.

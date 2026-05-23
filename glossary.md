@@ -23,6 +23,7 @@
 - **Circuit Breaker** — паттерн отказоустойчивости: автомат с тремя состояниями (Closed → Open → Half-Open). В Open-состоянии вызовы к сбойному downstream блокируются немедленно (fail-fast), без ожидания таймаута. Связан с [[retry-with-backoff]].
 - **Consumer Group (Kafka)** — группа consumer'ов, делящих партиции топика: каждая партиция достаётся ровно одному consumer'у в группе. Параллелизм = число партиций. Разные группы читают независимо.
 - **Consumer Lag** — отставание consumer от leader: `end_offset - committed_offset`. Ключевая метрика здоровья Kafka pipeline; рост лага = consumer не справляется.
+- **Cache Stampede (Thundering Herd)** — одновременный промах кэша у множества запросов при истечении TTL → все бьют в DB. Решения: singleflight, stale-while-revalidate, PER. See [[cache-stampede]].
 - **Cache-Aside (Lazy loading)** — паттерн кэширования: приложение читает кэш, при промахе идёт в БД и кладёт в кэш. См. [[caching-strategies]].
 - **Celebrity Problem** — feature социальных сетей: пользователи с миллионами followers создают write storm при fanout-on-write. Решается hybrid push/pull. См. [[fanout-strategies]].
 - **Cursor-Based Pagination** — пагинация через cursor (ID/timestamp последнего элемента), стабильна к insertions и быстра при глубоких страницах. См. [[pagination]].
@@ -67,7 +68,9 @@
 ## H
 
 - **Haversine Formula** — формула вычисления расстояния между двумя точками на сфере по (lat, lng). Точна для Земли; на малых расстояниях (<100 km) евклидово приближение допустимо.
-- **Hash Ring**
+- **Hash Ring** — структура для consistent hashing: ключи и ноды мапятся в одно числовое кольцо (0..2^32-1).
+- **Hash Slot (Redis Cluster)** — один из 16384 виртуальных слотов. Ключ → `CRC16(key) % 16384` → слот → нода-владелец. Не hash ring.
+- **Hot Key** — ключ кэша с непропорционально высоким трафиком. Перегружает одну Redis-ноду. Решения: L1 local cache, key splitting, read replicas. See [[cache-stampede]].
 - **HLS (HTTP Live Streaming)** — стандарт Apple для ABR: манифест `.m3u8` + сегменты `.ts` / `.m4s`. Совместим с любым HTTP/CDN. See [[adaptive-bitrate-streaming]].
 
 
