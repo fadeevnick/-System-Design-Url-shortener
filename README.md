@@ -25,6 +25,7 @@
 | 002 | [[002-url-shortener]] — URL Shortener (TinyURL / Bitly) | web/storage  | [[id-generation]], [[caching-strategies]], [[consistent-hashing]] |
 | 003 | [[003-rate-limiter]] — Rate Limiter | infrastructure | [[rate-limiting-algorithms]], [[caching-strategies]], [[consistent-hashing]] |
 | 004 | [[004-chat]] — Chat System (WhatsApp / Slack-like) | messaging | [[long-lived-connections]], [[fanout-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 005 | [[005-news-feed]] — News Feed (Twitter / Instagram-like) | social | [[fanout-strategies]], [[materialized-view]], [[pagination]], [[caching-strategies]] |
 
 ## Patterns
 
@@ -46,6 +47,8 @@
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).
 - [[caching-strategies]] — cache-aside, read-through, write-through, refresh-ahead, инвалидация.
 - [[consistent-hashing]] — шардинг через hash ring с virtual nodes.
+- [[materialized-view]] — pre-computed read model, refresh strategies.
+- [[pagination]] — offset / cursor / keyset, стабильность к insertions.
 
 ## Glossary
 

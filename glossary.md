@@ -15,6 +15,8 @@
 ## C
 
 - **Cache-Aside (Lazy loading)** — паттерн кэширования: приложение читает кэш, при промахе идёт в БД и кладёт в кэш. См. [[caching-strategies]].
+- **Celebrity Problem** — feature социальных сетей: пользователи с миллионами followers создают write storm при fanout-on-write. Решается hybrid push/pull. См. [[fanout-strategies]].
+- **Cursor-Based Pagination** — пагинация через cursor (ID/timestamp последнего элемента), стабильна к insertions и быстра при глубоких страницах. См. [[pagination]].
 - **Choreography** — стиль координации в распределённой системе, где сервисы реагируют на события без центрального координатора. См. [[orchestration-vs-choreography]].
 - **Consistent Hashing** — техника шардинга на основе hash ring, при которой добавление/удаление ноды затрагивает лишь ~1/N ключей. См. [[consistent-hashing]].
 - **CQRS** — Command Query Responsibility Segregation: разделение модели для чтения и записи.
@@ -54,6 +56,10 @@
 - **Leaky Bucket** — алгоритм rate limiting / traffic shaping: запросы стоят в очереди и обрабатываются с constant rate. Сглаживает burst. См. [[rate-limiting-algorithms]].
 - **Long-Lived Connection** — persistent двунаправленный канал client ↔ server, удерживающийся минутами/часами (WebSocket, SSE, gRPC streaming). См. [[long-lived-connections]].
 
+## M
+
+- **Materialized View** — pre-computed read-оптимизированное представление данных, хранится отдельно от источника, обновляется push/pull/scheduled. См. [[materialized-view]].
+
 ## N
 
 - **Notification Service** — сервис, который подписывается на события и доставляет их клиентам (WebSocket, push, email).
@@ -65,6 +71,7 @@
 
 ## P
 
+- **Pagination** — постраничная выдача больших коллекций (offset / cursor / keyset). См. [[pagination]].
 - **Presence** — индикатор online-статуса пользователя. Реализуется обычно через Redis с TTL и heartbeat.
 - **Pub/Sub** — модель «publish/subscribe»: publisher отправляет в topic, subscribers подписаны на topic. Развязывает sender и receiver.
 - **Push vs Pull** — модель доставки данных между системами. Push: отправитель инициирует доставку (webhook). Pull: получатель сам запрашивает данные (polling).
@@ -78,6 +85,7 @@
 
 - **Saga** — распределённая транзакция, представленная как последовательность локальных транзакций с компенсирующими действиями при сбое. См. [[saga]].
 - **Server-Sent Events (SSE)** — HTTP-протокол server-to-client push потока (одностороний). Простой формат, автореконнект. См. [[long-lived-connections]].
+- **Session-Stable Ranking** — при ranked feed заморозка ranking на сессию, чтобы новые items не сдвигали страницы при пагинации.
 - **Sharding** — горизонтальное разбиение данных между несколькими storage-нодами по ключу.
 - **Sliding Window** — алгоритм rate limiting с динамическим окном (log или counter), без burst-проблем на границе. См. [[rate-limiting-algorithms]].
 - **Snowflake ID** — 64-битный распределённый ID Twitter: timestamp + machine_id + sequence. Sortable по времени, не требует координации после раздачи machine_id.
