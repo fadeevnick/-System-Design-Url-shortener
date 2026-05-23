@@ -51,11 +51,15 @@
 
 ## G
 
+- **Geohash** — Base32-строка, кодирующая (lat, lng) через чередование бит широты и долготы. Общий префикс = близкие ячейки. Boundary problem: точки через границу имеют разный префикс → нужны 8 соседей. See [[geospatial-index]].
+- **Geofencing** — триггер события при входе/выходе объекта из географического полигона или ячейки (набора geohash).
+- **GIST Index** — обобщённый поисковый индекс в Postgres. Используется PostGIS для spatial queries (ST_DWithin, ST_Within).
 - **gRPC**
  — RPC-фреймворк поверх HTTP/2 с Protobuf. Стандарт для service-to-service внутри инфраструктуры.
 
 ## H
 
+- **Haversine Formula** — формула вычисления расстояния между двумя точками на сфере по (lat, lng). Точна для Земли; на малых расстояниях (<100 km) евклидово приближение допустимо.
 - **Hash Ring**
 - **HLS (HTTP Live Streaming)** — стандарт Apple для ABR: манифест `.m3u8` + сегменты `.ts` / `.m4s`. Совместим с любым HTTP/CDN. See [[adaptive-bitrate-streaming]].
 
@@ -99,6 +103,7 @@
 ## P
 
 - **Pagination**
+- **POI (Point of Interest)** — точка интереса на карте: ресторан, магазин, достопримечательность. Единица данных в Yelp-подобных системах.
 - **Presigned URL** — временный URL с HMAC-подписью, дающий право на конкретную операцию (PUT/GET) в Object Store (S3) без раскрытия credentials клиенту. TTL обычно 15 минут — 1 час. — постраничная выдача больших коллекций (offset / cursor / keyset). См. [[pagination]].
 - **Presence** — индикатор online-статуса пользователя. Реализуется обычно через Redis с TTL и heartbeat.
 - **Pub/Sub** — модель «publish/subscribe»: publisher отправляет в topic, subscribers подписаны на topic. Развязывает sender и receiver.

@@ -31,6 +31,7 @@
 | 008 | [[008-distributed-file-storage]] — Distributed File Storage (Dropbox / Google Drive) | storage | [[content-addressable-storage]], [[content-deduplication]], [[consistent-hashing]], [[long-lived-connections]] |
 | 009 | [[009-search-autocomplete]] — Search Autocomplete / Typeahead (Google / YouTube) | search | [[trie-prefix-index]], [[caching-strategies]], [[consistent-hashing]] |
 | 010 | [[010-video-streaming]] — Video Streaming (YouTube / Netflix) | media | [[adaptive-bitrate-streaming]], [[content-addressable-storage]], [[caching-strategies]], [[event-driven-architecture]] |
+| 011 | [[011-proximity-service]] — Proximity Service (Yelp / Uber) | geo | [[geospatial-index]], [[caching-strategies]], [[consistent-hashing]] |
 
 ## Patterns
 
@@ -56,6 +57,7 @@
 - [[content-addressable-storage]] — хранение блоков по SHA-256 хэшу: автоматическая дедупликация, immutability, GC.
 - [[trie-prefix-index]] — trie с top-K per node для autocomplete: O(P) lookup, шардинг, batch rebuild, CDN кэширование.
 - [[adaptive-bitrate-streaming]] — HLS/DASH, bitrate ladder, сегменты, ABR алгоритмы (BBA/BOLA), LL-HLS.
+- [[geospatial-index]] — Geohash / QuadTree / S2: сравнение, boundary problem, Redis GEOADD, precision table.
 
 ### Data & Storage
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).
