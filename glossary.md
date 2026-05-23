@@ -16,7 +16,8 @@
 
 ## C
 
-- **CAS (Content-Addressable Storage)** — схема хранения, в которой адрес объекта = SHA-256 его содержимого. Автоматическая дедупликация, immutability, integrity check. See [[content-addressable-storage]].
+- **CAS (Content-Addressable Storage)**
+- **Chargeback** — оспаривание транзакции покупателем через банк. Банк возвращает деньги покупателю; продавец должен предоставить доказательства (delivery proof, order confirmation) или теряет сумму + штраф. — схема хранения, в которой адрес объекта = SHA-256 его содержимого. Автоматическая дедупликация, immutability, integrity check. See [[content-addressable-storage]].
 - **CDC (Content-Defined Chunking)** — алгоритм нарезки файла на блоки по «природным» границам контента (rolling hash / Rabin), устойчив к сдвигу. Лучшая дедупликация, чем fixed-size.
 - **Circuit Breaker** — паттерн отказоустойчивости: автомат с тремя состояниями (Closed → Open → Half-Open). В Open-состоянии вызовы к сбойному downstream блокируются немедленно (fail-fast), без ожидания таймаута. Связан с [[retry-with-backoff]].
 - **Cache-Aside (Lazy loading)** — паттерн кэширования: приложение читает кэш, при промахе идёт в БД и кладёт в кэш. См. [[caching-strategies]].
@@ -28,7 +29,8 @@
 
 ## D
 
-- **DAG (Directed Acyclic Graph) Pipeline** — ориентированный граф без циклов, описывающий зависимости задач. В transcoding: split → [transcode_240p, transcode_720p, ...] → merge. Задачи без зависимостей выполняются параллельно.
+- **DAG (Directed Acyclic Graph) Pipeline**
+- **Double-Entry Ledger** — каждая транзакция = debit одного счёта + credit другого на равную сумму. Append-only. Баланс = SUM. Нарушение balance invariant = ошибка. See [[double-entry-ledger]]. — ориентированный граф без циклов, описывающий зависимости задач. В transcoding: split → [transcode_240p, transcode_720p, ...] → merge. Задачи без зависимостей выполняются параллельно.
 - **Dead-Letter Queue (DLQ)** — очередь для сообщений, которые не удалось обработать после исчерпания ретраев. Изолирует «токсичные» сообщения, позволяет анализировать и делать replay. See [[dead-letter-queue]].
 - **DKIM (DomainKeys Identified Mail)** — механизм подписи email-заголовков приватным ключом домена; получатель проверяет через DNS. Часть email deliverability трiade: SPF + DKIM + DMARC.
 - **DMARC** — политика обработки писем, не прошедших SPF/DKIM: `none`, `quarantine`, `reject`. Публикуется как DNS TXT запись.
@@ -103,7 +105,9 @@
 ## P
 
 - **Pagination**
-- **POI (Point of Interest)** — точка интереса на карте: ресторан, магазин, достопримечательность. Единица данных в Yelp-подобных системах.
+- **PCI DSS** — Payment Card Industry Data Security Standard. Запрещает хранить PAN (полный номер карты) и CVV на своих серверах. Решение: PSP hosted fields / iframe — карточные данные не попадают в наш код.
+- **POI (Point of Interest)**
+- **PSP (Payment Service Provider)** — провайдер платёжных услуг (Stripe, Adyen, Braintree). Принимает карточные данные, проводит авторизацию, переводит деньги. — точка интереса на карте: ресторан, магазин, достопримечательность. Единица данных в Yelp-подобных системах.
 - **Presigned URL** — временный URL с HMAC-подписью, дающий право на конкретную операцию (PUT/GET) в Object Store (S3) без раскрытия credentials клиенту. TTL обычно 15 минут — 1 час. — постраничная выдача больших коллекций (offset / cursor / keyset). См. [[pagination]].
 - **Presence** — индикатор online-статуса пользователя. Реализуется обычно через Redis с TTL и heartbeat.
 - **Pub/Sub** — модель «publish/subscribe»: publisher отправляет в topic, subscribers подписаны на topic. Развязывает sender и receiver.

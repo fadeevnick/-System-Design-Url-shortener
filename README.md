@@ -32,6 +32,7 @@
 | 009 | [[009-search-autocomplete]] — Search Autocomplete / Typeahead (Google / YouTube) | search | [[trie-prefix-index]], [[caching-strategies]], [[consistent-hashing]] |
 | 010 | [[010-video-streaming]] — Video Streaming (YouTube / Netflix) | media | [[adaptive-bitrate-streaming]], [[content-addressable-storage]], [[caching-strategies]], [[event-driven-architecture]] |
 | 011 | [[011-proximity-service]] — Proximity Service (Yelp / Uber) | geo | [[geospatial-index]], [[caching-strategies]], [[consistent-hashing]] |
+| 012 | [[012-payment-system]] — Payment System (Stripe / Airbnb Pay) | fintech | [[double-entry-ledger]], [[idempotency-key]], [[outbox]], [[saga]], [[retry-with-backoff]] |
 
 ## Patterns
 
@@ -42,6 +43,7 @@
 - [[rate-limiting-algorithms]] — token bucket, leaky bucket, sliding window, fixed window.
 - [[retry-with-backoff]] — exponential backoff + jitter (Full/Equal/Decorrelated), retry budgets, Circuit Breaker связка.
 - [[dead-letter-queue]] — изоляция необрабатываемых сообщений, metadata, replay flow, broker comparison.
+- [[double-entry-ledger]] — двойная запись, append-only, balance snapshot, reconciliation, exactly-once via idempotency.
 
 ### Architectural Styles
 - [[event-driven-architecture]] — система, где компоненты общаются через события на шине.
