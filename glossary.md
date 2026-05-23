@@ -14,6 +14,7 @@
 
 ## C
 
+- **Circuit Breaker** — паттерн отказоустойчивости: автомат с тремя состояниями (Closed → Open → Half-Open). В Open-состоянии вызовы к сбойному downstream блокируются немедленно (fail-fast), без ожидания таймаута. Связан с [[retry-with-backoff]].
 - **Cache-Aside (Lazy loading)** — паттерн кэширования: приложение читает кэш, при промахе идёт в БД и кладёт в кэш. См. [[caching-strategies]].
 - **Celebrity Problem** — feature социальных сетей: пользователи с миллионами followers создают write storm при fanout-on-write. Решается hybrid push/pull. См. [[fanout-strategies]].
 - **Cursor-Based Pagination** — пагинация через cursor (ID/timestamp последнего элемента), стабильна к insertions и быстра при глубоких страницах. См. [[pagination]].
@@ -21,10 +22,17 @@
 - **Consistent Hashing** — техника шардинга на основе hash ring, при которой добавление/удаление ноды затрагивает лишь ~1/N ключей. См. [[consistent-hashing]].
 - **CQRS** — Command Query Responsibility Segregation: разделение модели для чтения и записи.
 
+## D
+
+- **Dead-Letter Queue (DLQ)** — очередь для сообщений, которые не удалось обработать после исчерпания ретраев. Изолирует «токсичные» сообщения, позволяет анализировать и делать replay. See [[dead-letter-queue]].
+- **DKIM (DomainKeys Identified Mail)** — механизм подписи email-заголовков приватным ключом домена; получатель проверяет через DNS. Часть email deliverability трiade: SPF + DKIM + DMARC.
+- **DMARC** — политика обработки писем, не прошедших SPF/DKIM: `none`, `quarantine`, `reject`. Публикуется как DNS TXT запись.
+
 ## E
 
 - **Event-Driven Architecture (EDA)** — архитектурный стиль, в котором компоненты общаются через события на шине (Kafka, NATS, RabbitMQ). См. [[event-driven-architecture]].
 - **Event bus** — шина событий: брокер, через который сервисы публикуют и подписываются на события.
+- **Exponential Backoff** — стратегия ожидания между повторными попытками: задержка удваивается с каждой попыткой (`base * 2^n`). Применяется вместе с jitter для рассеивания нагрузки. See [[retry-with-backoff]].
 
 ## F
 
@@ -36,16 +44,23 @@
 
 ## G
 
-- **gRPC** — RPC-фреймворк поверх HTTP/2 с Protobuf. Стандарт для service-to-service внутри инфраструктуры.
+- **gRPC**
+ — RPC-фреймворк поверх HTTP/2 с Protobuf. Стандарт для service-to-service внутри инфраструктуры.
 
 ## H
 
-- **Hash Ring** — структура для consistent hashing: ключи и ноды мапятся в одно числовое кольцо (0..2^32-1).
+- **Hash Ring**
+
+ — структура для consistent hashing: ключи и ноды мапятся в одно числовое кольцо (0..2^32-1).
 
 ## I
 
 - **Idempotency Key** — клиентский ключ, по которому сервер дедуплицирует повторные запросы. См. [[idempotency-key]].
 - **Idempotent operation** — операция, повторное выполнение которой даёт тот же результат, что и однократное.
+
+## J
+
+- **Jitter** — случайный шум, добавляемый к задержке retry, чтобы клиенты не ретраили синхронно («thundering herd»). Варианты: Full, Equal, Decorrelated. See [[retry-with-backoff]].
 
 ## K
 

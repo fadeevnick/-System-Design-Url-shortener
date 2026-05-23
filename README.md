@@ -27,6 +27,7 @@
 | 004 | [[004-chat]] — Chat System (WhatsApp / Slack-like) | messaging | [[long-lived-connections]], [[fanout-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
 | 005 | [[005-news-feed]] — News Feed (Twitter / Instagram-like) | social | [[fanout-strategies]], [[materialized-view]], [[pagination]], [[caching-strategies]] |
 | 006 | [[006-web-crawler]] — Web Crawler (Googlebot / Common Crawl) | data-pipeline | [[url-frontier]], [[content-deduplication]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 007 | [[007-notification-service]] — Notification Service (push / email / SMS) | messaging | [[retry-with-backoff]], [[dead-letter-queue]], [[idempotency-key]], [[rate-limiting-algorithms]], [[event-driven-architecture]] |
 
 ## Patterns
 
@@ -35,6 +36,8 @@
 - [[idempotency-key]] — защита от дублирующих запросов через клиентский ключ.
 - [[saga]] — распределённые транзакции через локальные транзакции + компенсации.
 - [[rate-limiting-algorithms]] — token bucket, leaky bucket, sliding window, fixed window.
+- [[retry-with-backoff]] — exponential backoff + jitter (Full/Equal/Decorrelated), retry budgets, Circuit Breaker связка.
+- [[dead-letter-queue]] — изоляция необрабатываемых сообщений, metadata, replay flow, broker comparison.
 
 ### Architectural Styles
 - [[event-driven-architecture]] — система, где компоненты общаются через события на шине.
