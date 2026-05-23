@@ -55,10 +55,12 @@
 
 - **Leaky Bucket** — алгоритм rate limiting / traffic shaping: запросы стоят в очереди и обрабатываются с constant rate. Сглаживает burst. См. [[rate-limiting-algorithms]].
 - **Long-Lived Connection** — persistent двунаправленный канал client ↔ server, удерживающийся минутами/часами (WebSocket, SSE, gRPC streaming). См. [[long-lived-connections]].
+- **LSH (Locality Sensitive Hashing)** — техника для быстрого поиска близких объектов: похожие fingerprint'ы попадают в один bucket. См. [[content-deduplication]].
 
 ## M
 
 - **Materialized View** — pre-computed read-оптимизированное представление данных, хранится отдельно от источника, обновляется push/pull/scheduled. См. [[materialized-view]].
+- **MinHash** — техника оценки Jaccard similarity между set'ами через K min-hash значений. Используется для near-duplicate detection. См. [[content-deduplication]].
 
 ## N
 
@@ -86,6 +88,7 @@
 - **Saga** — распределённая транзакция, представленная как последовательность локальных транзакций с компенсирующими действиями при сбое. См. [[saga]].
 - **Server-Sent Events (SSE)** — HTTP-протокол server-to-client push потока (одностороний). Простой формат, автореконнект. См. [[long-lived-connections]].
 - **Session-Stable Ranking** — при ranked feed заморозка ranking на сессию, чтобы новые items не сдвигали страницы при пагинации.
+- **SimHash** — fingerprint техника (Google): документ → 64-битный hash; близкие документы → близкие hash'и по Hamming distance. См. [[content-deduplication]].
 - **Sharding** — горизонтальное разбиение данных между несколькими storage-нодами по ключу.
 - **Sliding Window** — алгоритм rate limiting с динамическим окном (log или counter), без burst-проблем на границе. См. [[rate-limiting-algorithms]].
 - **Snowflake ID** — 64-битный распределённый ID Twitter: timestamp + machine_id + sequence. Sortable по времени, не требует координации после раздачи machine_id.
@@ -99,6 +102,7 @@
 ## U
 
 - **ULID / KSUID** — 128-битный sortable идентификатор: timestamp + random. Drop-in replacement для UUID v4, лучше для индексов БД.
+- **URL Frontier** — двухуровневая очередь в web crawler'е (front queues по приоритету + back queues per host) с politeness constraint. См. [[url-frontier]].
 
 ## V
 

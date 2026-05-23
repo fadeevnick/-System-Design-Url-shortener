@@ -26,6 +26,7 @@
 | 003 | [[003-rate-limiter]] — Rate Limiter | infrastructure | [[rate-limiting-algorithms]], [[caching-strategies]], [[consistent-hashing]] |
 | 004 | [[004-chat]] — Chat System (WhatsApp / Slack-like) | messaging | [[long-lived-connections]], [[fanout-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
 | 005 | [[005-news-feed]] — News Feed (Twitter / Instagram-like) | social | [[fanout-strategies]], [[materialized-view]], [[pagination]], [[caching-strategies]] |
+| 006 | [[006-web-crawler]] — Web Crawler (Googlebot / Common Crawl) | data-pipeline | [[url-frontier]], [[content-deduplication]], [[consistent-hashing]], [[event-driven-architecture]] |
 
 ## Patterns
 
@@ -42,6 +43,10 @@
 ### Communication
 - [[long-lived-connections]] — WebSocket / SSE / long-polling, persistent connections at scale.
 - [[fanout-strategies]] — fanout-on-write vs fanout-on-read, hybrid для celebrity-problem.
+
+### Distributed Coordination & Scheduling
+- [[url-frontier]] — two-level priority queue с politeness для distributed crawling.
+- [[content-deduplication]] — Bloom Filter, SimHash / MinHash, LSH для exact и near-duplicate detection.
 
 ### Data & Storage
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).
