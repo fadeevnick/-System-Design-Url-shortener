@@ -24,6 +24,7 @@
 | 001 | [[001-order-backend-marketplace]] — Order Backend для маркетплейса (Amazon-like) | e-commerce   | [[outbox]], [[idempotency-key]], [[saga]], [[event-driven-architecture]], [[orchestration-vs-choreography]] |
 | 002 | [[002-url-shortener]] — URL Shortener (TinyURL / Bitly) | web/storage  | [[id-generation]], [[caching-strategies]], [[consistent-hashing]] |
 | 003 | [[003-rate-limiter]] — Rate Limiter | infrastructure | [[rate-limiting-algorithms]], [[caching-strategies]], [[consistent-hashing]] |
+| 004 | [[004-chat]] — Chat System (WhatsApp / Slack-like) | messaging | [[long-lived-connections]], [[fanout-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
 
 ## Patterns
 
@@ -36,6 +37,10 @@
 ### Architectural Styles
 - [[event-driven-architecture]] — система, где компоненты общаются через события на шине.
 - [[orchestration-vs-choreography]] — сравнение двух стилей координации сервисов.
+
+### Communication
+- [[long-lived-connections]] — WebSocket / SSE / long-polling, persistent connections at scale.
+- [[fanout-strategies]] — fanout-on-write vs fanout-on-read, hybrid для celebrity-problem.
 
 ### Data & Storage
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).

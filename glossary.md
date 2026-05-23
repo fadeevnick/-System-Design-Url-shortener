@@ -28,6 +28,8 @@
 
 - **Fail-closed** — стратегия при отказе зависимости: блокировать запрос. Используется для критичных операций (платежи). Trade-off: сбой зависимости = outage.
 - **Fail-open** — стратегия при отказе зависимости: пропускать запрос как будто проверка прошла. Default для не-критичных read-paths.
+- **Fanout-on-Read (Pull)** — модель fanout: сообщение хранится один раз, получатель «собирает» ленту при чтении. Дешёвый write, дорогой read. См. [[fanout-strategies]].
+- **Fanout-on-Write (Push)** — модель fanout: сообщение копируется в inbox каждого получателя при отправке. Дорогой write, дешёвый read. См. [[fanout-strategies]].
 - **Fixed Window** — алгоритм rate limiting со счётчиком на фиксированных временных окнах. Прост, но допускает burst на границе. См. [[rate-limiting-algorithms]].
 
 ## G
@@ -50,6 +52,7 @@
 ## L
 
 - **Leaky Bucket** — алгоритм rate limiting / traffic shaping: запросы стоят в очереди и обрабатываются с constant rate. Сглаживает burst. См. [[rate-limiting-algorithms]].
+- **Long-Lived Connection** — persistent двунаправленный канал client ↔ server, удерживающийся минутами/часами (WebSocket, SSE, gRPC streaming). См. [[long-lived-connections]].
 
 ## N
 
@@ -62,6 +65,8 @@
 
 ## P
 
+- **Presence** — индикатор online-статуса пользователя. Реализуется обычно через Redis с TTL и heartbeat.
+- **Pub/Sub** — модель «publish/subscribe»: publisher отправляет в topic, subscribers подписаны на topic. Развязывает sender и receiver.
 - **Push vs Pull** — модель доставки данных между системами. Push: отправитель инициирует доставку (webhook). Pull: получатель сам запрашивает данные (polling).
 
 ## R
@@ -72,6 +77,7 @@
 ## S
 
 - **Saga** — распределённая транзакция, представленная как последовательность локальных транзакций с компенсирующими действиями при сбое. См. [[saga]].
+- **Server-Sent Events (SSE)** — HTTP-протокол server-to-client push потока (одностороний). Простой формат, автореконнект. См. [[long-lived-connections]].
 - **Sharding** — горизонтальное разбиение данных между несколькими storage-нодами по ключу.
 - **Sliding Window** — алгоритм rate limiting с динамическим окном (log или counter), без burst-проблем на границе. См. [[rate-limiting-algorithms]].
 - **Snowflake ID** — 64-битный распределённый ID Twitter: timestamp + machine_id + sequence. Sortable по времени, не требует координации после раздачи machine_id.
