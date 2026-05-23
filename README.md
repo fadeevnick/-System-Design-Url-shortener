@@ -35,6 +35,7 @@
 | 012 | [[012-payment-system]] — Payment System (Stripe / Airbnb Pay) | fintech | [[double-entry-ledger]], [[idempotency-key]], [[outbox]], [[saga]], [[retry-with-backoff]] |
 | 013 | [[013-distributed-message-queue]] — Distributed Message Queue (Kafka / RabbitMQ) | messaging | [[log-structured-storage]], [[dead-letter-queue]], [[event-driven-architecture]], [[consistent-hashing]] |
 | 014 | [[014-metrics-monitoring]] — Metrics Monitoring & Alerting (Prometheus / Datadog) | observability | [[time-series-storage]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 015 | [[015-leaderboard]] — Leaderboard (Gaming / Live Scoring) | gaming | [[sorted-set-index]], [[caching-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
 
 ## Patterns
 
@@ -64,6 +65,7 @@
 - [[geospatial-index]] — Geohash / QuadTree / S2: сравнение, boundary problem, Redis GEOADD, precision table.
 - [[log-structured-storage]] — append-only log, segment files, zero-copy sendfile, sparse index, log compaction, LSM tree.
 - [[time-series-storage]] — Gorilla compression (delta-of-delta, XOR), chunk-based TSDB, inverted index, downsampling, cardinality.
+- [[sorted-set-index]] — Skip List + Hash Map: O(log N) rank/range, ZINCRBY atomic, score-range sharding, time-windowed keys.
 
 ### Data & Storage
 - [[id-generation]] — стратегии генерации уникальных ID (counter, hash, snowflake, ULID).

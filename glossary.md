@@ -128,7 +128,9 @@
 
 ## S
 
-- **Saga** — распределённая транзакция, представленная как последовательность локальных транзакций с компенсирующими действиями при сбое. См. [[saga]].
+- **Saga**
+- **Skip List** — вероятностная структура данных: многоуровневый связный список, O(log N) для search/insert/delete. Основа Redis ZSET. Практичная альтернатива balanced BST без сложной балансировки.
+- **Sorted Set (ZSET)** — структура данных Redis: уникальные members + numeric score, отсортированы по score. O(log N) ZADD/ZRANK/ZRANGE. Atomic ZINCRBY. Основа лидербордов, sliding window rate limiting. See [[sorted-set-index]]. — распределённая транзакция, представленная как последовательность локальных транзакций с компенсирующими действиями при сбое. См. [[saga]].
 - **Server-Sent Events (SSE)** — HTTP-протокол server-to-client push потока (одностороний). Простой формат, автореконнект. См. [[long-lived-connections]].
 - **Session-Stable Ranking** — при ranked feed заморозка ranking на сессию, чтобы новые items не сдвигали страницы при пагинации.
 - **SimHash** — fingerprint техника (Google): документ → 64-битный hash; близкие документы → близкие hash'и по Hamming distance. См. [[content-deduplication]].
