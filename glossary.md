@@ -32,6 +32,7 @@
 
 ## E
 
+- **Edge N-Gram** — токенизатор, разбивающий слово на префиксы: "google" → ["g","go","goo","goog","googl","google"]. Используется в Elasticsearch для autocomplete через обычный term query.
 - **Envelope Encryption** — паттерн шифрования: данные зашифрованы data key (DEK), сам DEK зашифрован key-encryption key (KEK) из KMS. Позволяет ротировать KEK без перешифровки данных.
 - **Event-Driven Architecture (EDA)** — архитектурный стиль, в котором компоненты общаются через события на шине (Kafka, NATS, RabbitMQ). См. [[event-driven-architecture]].
 - **Event bus** — шина событий: брокер, через который сервисы публикуют и подписываются на события.
@@ -114,7 +115,10 @@
 
 ## T
 
-- **Ticket Server** — централизованный сервис, выдающий монотонно растущие ID (часто диапазонами). Используется для генерации sequential ID без auto-increment в БД.
+- **Ticket Server**
+- **Trie (Prefix Tree)** — дерево, где путь от корня до узла — префикс ключа. Все ключи с общим префиксом разделяют путь. O(P) lookup, P = длина префикса. See [[trie-prefix-index]].
+- **Top-K per node (Trie)** — оптимизация: каждый узел trie pre-computed хранит K наиболее релевантных завершений. Запрос = обход префикса + O(1) возврат списка.
+- **Trending Query** — запрос, velocity которого (count за последние 5 мин / baseline) резко выросла. Добавляется в suggestions через fast-path поверх основного trie ranking. — централизованный сервис, выдающий монотонно растущие ID (часто диапазонами). Используется для генерации sequential ID без auto-increment в БД.
 - **Token Bucket** — алгоритм rate limiting: ведро с токенами, refill at rate R, capacity C. Разрешает burst до C, ограничивает average. Default для API. См. [[rate-limiting-algorithms]].
 - **TTL (Time-To-Live)** — срок жизни записи в кэше или БД, после которого она удаляется или считается невалидной.
 
