@@ -1,3 +1,4 @@
+---
 name: fencing-token
 title: Fencing Token
 category: consistency

@@ -1,3 +1,4 @@
+---
 id: 011
 title: Proximity Service (Yelp / Uber)
 source: Alex Xu, *System Design Interview Vol. 2*, Chapter 1. Аналоги: Yelp (поиск мест), Uber/Lyft (поиск водителей), Google Maps (ближайшие заправки).

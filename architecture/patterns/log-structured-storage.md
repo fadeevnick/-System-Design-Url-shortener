@@ -1,3 +1,4 @@
+---
 name: log-structured-storage
 title: Log-Structured Storage
 category: data

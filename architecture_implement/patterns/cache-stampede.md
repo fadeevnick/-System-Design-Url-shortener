@@ -1,3 +1,4 @@
+---
 name: cache-stampede
 title: Cache Stampede Prevention
 category: reliability

@@ -1,3 +1,4 @@
+---
 name: double-entry-ledger
 title: Double-Entry Ledger
 category: consistency

@@ -1,3 +1,4 @@
+---
 id: 016
 title: Distributed Cache (Redis Cluster Design)
 source: Alex Xu, *System Design Interview Vol. 2*, Chapter 6 + дополнительные темы из Redis Cluster documentation. Аналоги: Redis Cluster, Memcached + mcrouter, Apache Ignite.

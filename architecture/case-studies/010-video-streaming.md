@@ -1,3 +1,4 @@
+---
 id: 010
 title: Video Streaming (YouTube / Netflix)
 source: Alex Xu, *System Design Interview Vol. 1*, Chapter 14. Аналоги: YouTube, Netflix, TikTok.

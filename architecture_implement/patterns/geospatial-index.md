@@ -1,3 +1,4 @@
+---
 name: geospatial-index
 title: Geospatial Index
 category: data

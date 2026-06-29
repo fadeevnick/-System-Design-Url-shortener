@@ -1,3 +1,4 @@
+---
 id: 015
 title: Leaderboard (Gaming / Live Scoring)
 source: Alex Xu, *System Design Interview Vol. 2*, Chapter 10. Аналоги: Clash of Clans, Candy Crush, Fortnite, chess.com рейтинги, Duolingo XP-таблица.

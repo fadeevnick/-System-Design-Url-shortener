@@ -1,3 +1,4 @@
+---
 id: 013
 title: Distributed Message Queue
 source: Alex Xu, *System Design Interview Vol. 2*, Chapter 4. Аналоги: Apache Kafka, RabbitMQ, AWS SQS, Google Pub/Sub, NATS JetStream.

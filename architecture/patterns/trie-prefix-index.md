@@ -1,3 +1,4 @@
+---
 name: trie-prefix-index
 title: Trie Prefix Index
 category: data

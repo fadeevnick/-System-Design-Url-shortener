@@ -1,3 +1,4 @@
+---
 name: sorted-set-index
 title: Sorted Set Index
 category: data

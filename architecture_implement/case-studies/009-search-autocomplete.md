@@ -1,3 +1,4 @@
+---
 id: 009
 title: Search Autocomplete (Typeahead)
 source: Alex Xu, *System Design Interview Vol. 1*, Chapter 13. Аналоги: Google Search suggestions, YouTube typeahead, Amazon search bar.

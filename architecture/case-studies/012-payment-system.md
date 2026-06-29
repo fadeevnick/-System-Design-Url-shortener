@@ -1,3 +1,4 @@
+---
 id: 012
 title: Payment System
 source: Alex Xu, *System Design Interview Vol. 2*, Chapter 11. Аналоги: Stripe, PayPal, Airbnb Payments, Uber Pay.

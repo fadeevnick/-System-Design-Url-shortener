@@ -1,3 +1,4 @@
+---
 name: content-addressable-storage
 title: Content-Addressable Storage (CAS)
 category: data

@@ -1,3 +1,4 @@
+---
 id: 017
 title: Distributed Lock
 source: Alex Xu, *System Design Interview Vol. 2*, Chapter 8. Аналоги: Redis Redlock, ZooKeeper locks, etcd lease, Google Chubby.

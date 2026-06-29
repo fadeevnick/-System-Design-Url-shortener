@@ -1,3 +1,4 @@
+---
 id: 008
 title: Distributed File Storage
 source: Alex Xu, *System Design Interview Vol. 1*, Chapter 15. Аналоги: Dropbox, Google Drive, OneDrive.

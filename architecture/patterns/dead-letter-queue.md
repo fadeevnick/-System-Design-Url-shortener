@@ -1,3 +1,4 @@
+---
 name: dead-letter-queue
 title: Dead-Letter Queue (DLQ)
 category: reliability
