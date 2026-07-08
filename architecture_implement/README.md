@@ -6,6 +6,7 @@
 
 - **`case-studies/`** — разборы конкретных задач. Каждый кейс самодостаточен: формулировка задачи, требования, 1–N альтернативных решений, трейд-оффы, выводы.
 - **`patterns/`** — переиспользуемые архитектурные паттерны (Outbox, Saga, Idempotency Key и т.д.). Описываются один раз, case studies ссылаются.
+- **`foundations/`** — вводные материалы перед паттернами: базовые сущности, read/write path, scaling data, cache basics, distributed failures.
 - **`glossary.md`** — короткие определения базовых терминов.
 - **`_template-case-study.md`** / **`_template-pattern.md`** — шаблоны для новых записей.
 
@@ -17,27 +18,37 @@
 - Frontmatter (YAML) в начале каждого файла — для тегов, источников, кросс-ссылок.
 - Язык: русский в тексте, английский в названиях паттернов и терминов.
 
+## Foundations
+
+| ID  | Title | Next |
+|-----|-------|------|
+| 001 | [[001-system-design-basics]] — базовые сущности system design: client, API, service, DB, cache, queue, node, cluster | [[002-read-write-path]] |
+| 002 | [[002-read-write-path]] — read path, write path, latency, sync/async work | [[003-scaling-data]], [[004-cache-basics]] |
+| 003 | [[003-scaling-data]] — sharding, partitioning, routing, replication | [[consistent-hashing]] |
+| 004 | [[004-cache-basics]] — cache hit/miss, TTL, stale data, hot key, distributed cache | [[caching-strategies]] |
+| 005 | [[005-distributed-systems-failures]] — partial failure, timeout, retry, duplicate message, dual write | [[idempotency-key]], [[retry-with-backoff]], [[outbox]] |
+
 ## Case Studies
 
-| ID  | Title                                              | Domain       | Patterns                                                    |
-|-----|----------------------------------------------------|--------------|-------------------------------------------------------------|
-| 001 | [[001-order-backend-marketplace]] — Order Backend для маркетплейса (Amazon-like) | e-commerce   | [[outbox]], [[idempotency-key]], [[saga]], [[event-driven-architecture]], [[orchestration-vs-choreography]] |
-| 002 | [[002-url-shortener]] — URL Shortener (TinyURL / Bitly) | web/storage  | [[id-generation]], [[caching-strategies]], [[consistent-hashing]] |
-| 003 | [[003-rate-limiter]] — Rate Limiter | infrastructure | [[rate-limiting-algorithms]], [[caching-strategies]], [[consistent-hashing]] |
-| 004 | [[004-chat]] — Chat System (WhatsApp / Slack-like) | messaging | [[long-lived-connections]], [[fanout-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
-| 005 | [[005-news-feed]] — News Feed (Twitter / Instagram-like) | social | [[fanout-strategies]], [[materialized-view]], [[pagination]], [[caching-strategies]] |
-| 006 | [[006-web-crawler]] — Web Crawler (Googlebot / Common Crawl) | data-pipeline | [[url-frontier]], [[content-deduplication]], [[consistent-hashing]], [[event-driven-architecture]] |
-| 007 | [[007-notification-service]] — Notification Service (push / email / SMS) | messaging | [[retry-with-backoff]], [[dead-letter-queue]], [[idempotency-key]], [[rate-limiting-algorithms]], [[event-driven-architecture]] |
-| 008 | [[008-distributed-file-storage]] — Distributed File Storage (Dropbox / Google Drive) | storage | [[content-addressable-storage]], [[content-deduplication]], [[consistent-hashing]], [[long-lived-connections]] |
-| 009 | [[009-search-autocomplete]] — Search Autocomplete / Typeahead (Google / YouTube) | search | [[trie-prefix-index]], [[caching-strategies]], [[consistent-hashing]] |
-| 010 | [[010-video-streaming]] — Video Streaming (YouTube / Netflix) | media | [[adaptive-bitrate-streaming]], [[content-addressable-storage]], [[caching-strategies]], [[event-driven-architecture]] |
-| 011 | [[011-proximity-service]] — Proximity Service (Yelp / Uber) | geo | [[geospatial-index]], [[caching-strategies]], [[consistent-hashing]] |
-| 012 | [[012-payment-system]] — Payment System (Stripe / Airbnb Pay) | fintech | [[double-entry-ledger]], [[idempotency-key]], [[outbox]], [[saga]], [[retry-with-backoff]] |
-| 013 | [[013-distributed-message-queue]] — Distributed Message Queue (Kafka / RabbitMQ) | messaging | [[log-structured-storage]], [[dead-letter-queue]], [[event-driven-architecture]], [[consistent-hashing]] |
-| 014 | [[014-metrics-monitoring]] — Metrics Monitoring & Alerting (Prometheus / Datadog) | observability | [[time-series-storage]], [[consistent-hashing]], [[event-driven-architecture]] |
-| 015 | [[015-leaderboard]] — Leaderboard (Gaming / Live Scoring) | gaming | [[sorted-set-index]], [[caching-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
-| 016 | [[016-distributed-cache]] — Distributed Cache (Redis Cluster Design) | infrastructure | [[cache-stampede]], [[caching-strategies]], [[consistent-hashing]] |
-| 017 | [[017-distributed-lock]] — Distributed Lock (Redis Redlock / ZooKeeper / etcd) | infrastructure | [[fencing-token]], [[idempotency-key]], [[retry-with-backoff]] |
+| ID  | Title | Description | Domain | Patterns |
+|-----|-------|-------------|--------|----------|
+| 001 | [[001-order-backend-marketplace]] — Order Backend для маркетплейса (Amazon-like) | Приём заказов, асинхронная обработка, уведомление вендоров и сравнение orchestration с event-driven flow. | e-commerce | [[outbox]], [[idempotency-key]], [[saga]], [[event-driven-architecture]], [[orchestration-vs-choreography]] |
+| 002 | [[002-url-shortener]] — URL Shortener (TinyURL / Bitly) | Генерация коротких ссылок, редиректы, read-heavy хранение и кэширование популярных URL. | web/storage | [[id-generation]], [[caching-strategies]], [[consistent-hashing]] |
+| 003 | [[003-rate-limiter]] — Rate Limiter | Ограничение запросов на API edge, выбор алгоритма лимитов и распределённое хранение счётчиков. | infrastructure | [[rate-limiting-algorithms]], [[caching-strategies]], [[consistent-hashing]] |
+| 004 | [[004-chat]] — Chat System (WhatsApp / Slack-like) | Realtime сообщения, долгие соединения, online presence, fanout и доставка между устройствами. | messaging | [[long-lived-connections]], [[fanout-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 005 | [[005-news-feed]] — News Feed (Twitter / Instagram-like) | Построение персональной ленты, fanout-on-write/read, materialized inbox и стабильная пагинация. | social | [[fanout-strategies]], [[materialized-view]], [[pagination]], [[caching-strategies]] |
+| 006 | [[006-web-crawler]] — Web Crawler (Googlebot / Common Crawl) | Распределённый обход веба: frontier, politeness, дедупликация контента и масштабирование crawler workers. | data-pipeline | [[url-frontier]], [[content-deduplication]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 007 | [[007-notification-service]] — Notification Service (push / email / SMS) | Мультиканальная доставка уведомлений с ретраями, DLQ, rate limits и идемпотентной обработкой. | messaging | [[retry-with-backoff]], [[dead-letter-queue]], [[idempotency-key]], [[rate-limiting-algorithms]], [[event-driven-architecture]] |
+| 008 | [[008-distributed-file-storage]] — Distributed File Storage (Dropbox / Google Drive) | Синхронизация файлов между устройствами, chunk storage, версии, шаринг и дедупликация данных. | storage | [[content-addressable-storage]], [[content-deduplication]], [[consistent-hashing]], [[long-lived-connections]] |
+| 009 | [[009-search-autocomplete]] — Search Autocomplete / Typeahead (Google / YouTube) | Подсказки при вводе запроса: trie/top-K индекс, ranking, hot queries и низкая latency. | search | [[trie-prefix-index]], [[caching-strategies]], [[consistent-hashing]] |
+| 010 | [[010-video-streaming]] — Video Streaming (YouTube / Netflix) | Загрузка, транскодирование и доставка видео через CDN с adaptive bitrate streaming. | media | [[adaptive-bitrate-streaming]], [[content-addressable-storage]], [[caching-strategies]], [[event-driven-architecture]] |
+| 011 | [[011-proximity-service]] — Proximity Service (Yelp / Uber) | Поиск ближайших объектов или водителей с geospatial index, caching и учётом boundary cases. | geo | [[geospatial-index]], [[caching-strategies]], [[consistent-hashing]] |
+| 012 | [[012-payment-system]] — Payment System (Stripe / Airbnb Pay) | Pay-in/pay-out, ledger, reconciliation, refunds, chargebacks и exactly-once поведение через идемпотентность. | fintech | [[double-entry-ledger]], [[idempotency-key]], [[outbox]], [[saga]], [[retry-with-backoff]] |
+| 013 | [[013-distributed-message-queue]] — Distributed Message Queue (Kafka / RabbitMQ) | Проектирование брокера: partitioned log, consumer groups, offsets, retention и delivery semantics. | messaging | [[log-structured-storage]], [[dead-letter-queue]], [[event-driven-architecture]], [[consistent-hashing]] |
+| 014 | [[014-metrics-monitoring]] — Metrics Monitoring & Alerting (Prometheus / Datadog) | Ingestion метрик, TSDB storage, query path, downsampling и pipeline алертов. | observability | [[time-series-storage]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 015 | [[015-leaderboard]] — Leaderboard (Gaming / Live Scoring) | Realtime рейтинги игроков, rank/range queries, weekly reset, friends leaderboard и шардирование. | gaming | [[sorted-set-index]], [[caching-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
+| 016 | [[016-distributed-cache]] — Distributed Cache (Redis Cluster Design) | Распределённый кэш: hash slots, replication/failover, eviction, warming, hot keys и cache stampede. | infrastructure | [[cache-stampede]], [[caching-strategies]], [[consistent-hashing]] |
+| 017 | [[017-distributed-lock]] — Distributed Lock (Redis Redlock / ZooKeeper / etcd) | Distributed mutex, TTL/lease, Redlock trade-offs, ZooKeeper/etcd locks и fencing tokens. | infrastructure | [[fencing-token]], [[idempotency-key]], [[retry-with-backoff]] |
 
 ## Patterns
 

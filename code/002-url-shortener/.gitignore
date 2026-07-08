@@ -1,0 +1,6 @@
+node_modules
+dist
+.env
+*.log
+infra/ansible/vars.yml
+infra/ansible/*.json
