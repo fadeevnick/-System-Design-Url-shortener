@@ -1,0 +1,21 @@
+gcp_project = "my-gcp-project-id"
+gcp_region  = "europe-west1"
+
+db_instance_name = "url-shortener-db"
+db_version       = "POSTGRES_16"
+db_edition       = "ENTERPRISE"
+db_tier          = "db-f1-micro"
+db_disk_size_gb  = 10
+
+db_name = "url_shortener"
+db_user = "url_shortener"
+
+# Keep this narrow. For local experiments use your current public IP /32.
+authorized_networks = [
+  {
+    name  = "local-dev"
+    value = "YOUR_PUBLIC_IP/32"
+  }
+]
+
+deletion_protection = false

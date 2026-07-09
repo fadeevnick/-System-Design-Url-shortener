@@ -2,5 +2,8 @@ node_modules
 dist
 .env
 *.log
-infra/ansible/vars.yml
-infra/ansible/*.json
+infra/terraform/.terraform
+infra/terraform/.terraform.lock.hcl
+infra/terraform/terraform.tfstate
+infra/terraform/terraform.tfstate.backup
+infra/terraform/*.tfvars

@@ -21,9 +21,9 @@ API будет доступен на `http://localhost:3000`.
 
 ## PostgreSQL в GCP
 
-Для деплоя PostgreSQL в GCP через Ansible смотри:
+Для деплоя PostgreSQL в GCP через Terraform смотри:
 
-[infra/ansible/README.md](infra/ansible/README.md)
+[infra/terraform/README.md](infra/terraform/README.md)
 
 ## Создать короткую ссылку
 
