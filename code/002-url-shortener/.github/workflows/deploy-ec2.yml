@@ -1,0 +1,80 @@
+name: Deploy to EC2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      APP_DIR: /home/${{ secrets.EC2_USER }}/002-url-shortener
+      SERVICE_NAME: url-shortener
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Create deployment archive
+        run: |
+          mkdir -p deploy
+          cp -R dist tools docs deploy/
+          cp package.json package-lock.json README.md deploy/
+          tar -czf release.tgz -C deploy .
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload archive
+        run: |
+          scp -i ~/.ssh/deploy_key release.tgz \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/url-shortener-release.tgz"
+
+      - name: Deploy on EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
+          set -euo pipefail
+
+          APP_DIR="${{ env.APP_DIR }}"
+          SERVICE_NAME="${{ env.SERVICE_NAME }}"
+
+          mkdir -p "$APP_DIR"
+          tar -xzf /tmp/url-shortener-release.tgz -C "$APP_DIR"
+          cd "$APP_DIR"
+
+          npm ci --omit=dev
+
+          cat > .env << ENVEOF
+          PORT=${{ secrets.PORT }}
+          BASE_URL=${{ secrets.BASE_URL }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          PG_POOL_MAX=${{ secrets.PG_POOL_MAX }}
+          ENVEOF
+
+          sudo cp "$APP_DIR/deploy/systemd/url-shortener.service" "/etc/systemd/system/$SERVICE_NAME.service"
+          sudo systemctl daemon-reload
+          sudo systemctl enable "$SERVICE_NAME"
+          sudo systemctl restart "$SERVICE_NAME"
+          sudo systemctl --no-pager --full status "$SERVICE_NAME"
+          EOF
+
+      - name: Smoke test
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+            'curl -fsS http://localhost:${{ secrets.PORT }}/health'

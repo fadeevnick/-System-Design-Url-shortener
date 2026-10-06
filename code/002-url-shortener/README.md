@@ -48,6 +48,12 @@ npm run experiment:load -- capacity-step
 
 [infra/terraform/README.md](infra/terraform/README.md)
 
+## Deploy to EC2
+
+Для ручного деплоя через GitHub Actions смотри:
+
+[docs/deployment.md](docs/deployment.md)
+
 ## Создать короткую ссылку
 
 ```bash
