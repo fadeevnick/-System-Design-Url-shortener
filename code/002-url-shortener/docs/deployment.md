@@ -2,6 +2,24 @@
 
 Этот вариант деплоя запускается вручную из GitHub Actions.
 
+Важно: git repository находится выше проекта:
+
+```text
+/home/nickf/Documents/architecture
+```
+
+Поэтому workflow лежит в корне repo:
+
+```text
+.github/workflows/url-shortener-deploy.yml
+```
+
+А команды сборки выполняются из подпапки:
+
+```text
+code/002-url-shortener
+```
+
 Он делает:
 
 1. собирает NestJS проект;
@@ -78,7 +96,7 @@ sudo systemctl status
 В GitHub:
 
 ```text
-Actions -> Deploy to EC2 -> Run workflow
+Actions -> Deploy URL Shortener to EC2 -> Run workflow
 ```
 
 После деплоя на EC2:

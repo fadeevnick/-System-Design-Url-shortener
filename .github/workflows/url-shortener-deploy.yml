@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy URL Shortener to EC2
 
 on:
   workflow_dispatch:
@@ -8,8 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      SERVICE_PATH: code/002-url-shortener
       APP_DIR: /home/${{ secrets.EC2_USER }}/002-url-shortener
       SERVICE_NAME: url-shortener
+
+    defaults:
+      run:
+        working-directory: code/002-url-shortener
 
     steps:
       - name: Checkout
@@ -20,6 +25,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: code/002-url-shortener/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -29,10 +35,12 @@ jobs:
 
       - name: Create deployment archive
         run: |
-          mkdir -p deploy
-          cp -R dist tools docs deploy/
-          cp package.json package-lock.json README.md deploy/
-          tar -czf release.tgz -C deploy .
+          rm -rf .release
+          mkdir -p .release/deploy
+          cp -R dist tools docs .release/
+          cp -R deploy/systemd .release/deploy/
+          cp package.json package-lock.json README.md .release/
+          tar -czf release.tgz -C .release .
 
       - name: Configure SSH
         run: |
