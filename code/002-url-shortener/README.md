@@ -19,6 +19,29 @@ npm run start:dev
 
 API будет доступен на `http://localhost:3000`.
 
+## Evolution lab
+
+Этот пример развивается по шагам: сначала простая архитектура, потом каждое усложнение добавляется только после сценария, который показывает проблему.
+
+- [docs/evolution.md](docs/evolution.md) — порядок усложнения архитектуры.
+- [docs/experiments.md](docs/experiments.md) — как запускать baseline experiments.
+
+Полезные endpoints:
+
+```bash
+curl http://localhost:3000/health
+curl http://localhost:3000/metrics
+```
+
+Главный нагрузочный сценарий перед добавлением Redis:
+
+```bash
+CONCURRENCY_STEPS=10,25,50,100,200 \
+STEP_SECONDS=30 \
+TARGET_P95_MS=100 \
+npm run experiment:load -- capacity-step
+```
+
 ## PostgreSQL в GCP
 
 Для деплоя PostgreSQL в GCP через Terraform смотри:

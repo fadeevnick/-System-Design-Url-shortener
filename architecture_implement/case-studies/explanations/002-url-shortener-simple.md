@@ -59,6 +59,171 @@ a8K2pQ -> https://shop.example.com/orders/923847293847?token=...&utm_source=sms&
 - измерять переходы по конкретной кампании;
 - иметь стабильную короткую ссылку, даже если реальный длинный URL потом изменится.
 
+## Как происходит взаимодействие с сервисом
+
+Разберем весь процесс с самого начала.
+
+У интернет-магазина уже есть длинная ссылка на страницу заказа:
+
+```text
+https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready
+```
+
+Эта ссылка ведет на реальную страницу заказа в системе магазина. Но для SMS она неудобная: длинная, техническая, содержит параметры и может некрасиво переноситься.
+
+### 1. Магазин создает короткую ссылку
+
+Короткую ссылку создает не конечный пользователь, а backend магазина или маркетинговая система.
+
+Она вызывает наш URL shortener:
+
+```http
+POST /shorten
+{
+  "long_url": "https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready"
+}
+```
+
+Смысл запроса:
+
+```text
+Вот длинный URL. Сохрани его у себя и дай мне короткий URL.
+```
+
+### 2. URL shortener сохраняет long_url
+
+Наш API получает `long_url` и делает запись в PostgreSQL:
+
+```sql
+INSERT INTO urls (long_url)
+VALUES ('https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready')
+RETURNING id;
+```
+
+PostgreSQL сам выдает новый `id`, например:
+
+```text
+id = 125
+```
+
+### 3. URL shortener создает short_code
+
+API берет `id = 125` и кодирует его в base62:
+
+```text
+base62(125) = "cb"
+```
+
+Получается короткий код:
+
+```text
+short_code = "cb"
+```
+
+После этого API сохраняет `short_code` в ту же запись:
+
+```sql
+UPDATE urls
+SET short_code = 'cb'
+WHERE id = 125;
+```
+
+Теперь в БД лежит соответствие:
+
+```text
+short_code: cb
+long_url: https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready
+```
+
+### 4. URL shortener возвращает short_url магазину
+
+Наш сервис отвечает:
+
+```json
+{
+  "short_url": "https://sho.rt/cb"
+}
+```
+
+Теперь магазин может использовать эту короткую ссылку в SMS.
+
+### 5. Магазин отправляет SMS пользователю
+
+Пользователь получает сообщение:
+
+```text
+Ваш заказ готов. Детали: https://sho.rt/cb
+```
+
+На этом этапе пользователь видит только короткую ссылку. Длинный URL скрыт внутри нашего URL shortener.
+
+### 6. Пользователь нажимает на короткую ссылку
+
+Браузер пользователя делает запрос:
+
+```http
+GET https://sho.rt/cb
+```
+
+Этот запрос приходит в наш URL shortener.
+
+### 7. URL shortener ищет исходный long_url
+
+API берет `cb` из адреса и ищет его в PostgreSQL:
+
+```sql
+SELECT long_url
+FROM urls
+WHERE short_code = 'cb';
+```
+
+PostgreSQL возвращает:
+
+```text
+https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready
+```
+
+### 8. URL shortener возвращает redirect
+
+Наш сервис не показывает пользователю страницу заказа. Он отвечает браузеру:
+
+```http
+302 Redirect
+Location: https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready
+```
+
+Это значит:
+
+```text
+Браузер, перейди по настоящему длинному URL.
+```
+
+### 9. Браузер открывает страницу магазина
+
+Браузер автоматически переходит по `Location` и открывает реальную страницу заказа на сайте магазина.
+
+Итоговая цепочка:
+
+```text
+Магазин -> POST /shorten -> URL Shortener -> Postgres
+Магазин <- short_url
+
+Пользователь <- SMS с short_url
+Пользователь -> GET /cb -> URL Shortener -> Postgres
+Пользователь <- 302 Redirect
+Пользователь -> shop.example.com/orders/...
+```
+
+Главная мысль:
+
+```text
+Shortener не хранит страницу заказа.
+Shortener хранит только соответствие:
+short_code -> long_url
+```
+
+То есть URL shortener работает как маленький справочник редиректов.
+
 ## Простейшая модель данных
 
 ```sql

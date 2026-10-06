@@ -13,6 +13,9 @@ export const PG_POOL = Symbol('PG_POOL');
           connectionString:
             process.env.DATABASE_URL ??
             'postgres://url_shortener:url_shortener@localhost:5432/url_shortener',
+            ssl: {
+              rejectUnauthorized: false
+            }
         });
 
         await pool.query(`
