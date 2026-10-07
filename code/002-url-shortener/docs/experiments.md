@@ -181,12 +181,35 @@ estimatedMonthlyDbReads
 cacheThoughtExperiment.avoidableDbReads
 ```
 
+Для диагностики bottleneck смотри дополнительные метрики приложения:
+
+```text
+db_pool_wait_duration{operation="resolve_short_code"}_avg_ms
+db_pool_wait_duration{operation="resolve_short_code"}_max_ms
+db_query_duration{operation="resolve_short_code"}_avg_ms
+db_query_duration{operation="resolve_short_code"}_max_ms
+db_pool_total_count
+db_pool_idle_count
+db_pool_waiting_count
+```
+
 Интерпретация:
 
 - `dbReadsPerSuccessfulRequest ≈ 1` означает, что read traffic напрямую грузит PostgreSQL;
 - высокий `p95Ms` важнее среднего latency;
 - `errorRatePct > 1` означает, что система уже не просто медленная, а нестабильная;
 - `avoidableDbReads` показывает, сколько PostgreSQL reads мог бы убрать Redis на hot-read workload.
+- если `db_pool_wait_duration` растет, запросы ждут свободное DB-соединение;
+- если `db_query_duration` растет, тормозит сам DB path: PostgreSQL, RDS, network или query execution;
+- если `db_pool_waiting_count` больше 0 под нагрузкой, pool стал очередью.
+
+По умолчанию `pg.Pool` использует `max=10`. Можно проверить другой размер pool:
+
+```bash
+PG_POOL_MAX=50 npm run start
+```
+
+Если после увеличения pool `db_pool_wait_duration` падает, а `p95` улучшается, bottleneck был в очереди connection pool. Если `db_query_duration` и RDS CPU/latency растут, bottleneck ближе к PostgreSQL/RDS.
 
 ## Когда Redis реально нужен
 

@@ -11,6 +11,7 @@ type TimerValue = {
 @Injectable()
 export class MetricsService {
   private readonly counters = new Map<string, number>();
+  private readonly gauges = new Map<string, number>();
   private readonly timers = new Map<string, TimerValue>();
 
   increment(name: string, labels: Labels = {}, amount = 1) {
@@ -29,10 +30,19 @@ export class MetricsService {
     });
   }
 
+  setGauge(name: string, value: number, labels: Labels = {}) {
+    const key = this.key(name, labels);
+    this.gauges.set(key, value);
+  }
+
   renderText(): string {
     const lines: string[] = [];
 
     for (const [key, value] of [...this.counters.entries()].sort()) {
+      lines.push(`${key} ${value}`);
+    }
+
+    for (const [key, value] of [...this.gauges.entries()].sort()) {
       lines.push(`${key} ${value}`);
     }
 

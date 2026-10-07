@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
-import { Pool } from 'pg';
+import { Pool, PoolClient, QueryResultRow } from 'pg';
 import { PG_POOL } from '../database/database.module';
 import { MetricsService } from '../observability/metrics.service';
 import { encodeBase62 } from './base62';
@@ -24,23 +24,30 @@ export class UrlsService implements OnModuleDestroy {
   async create(longUrl: string) {
     this.assertValidUrl(longUrl);
 
-    const client = await this.pool.connect();
+    const client = await this.connectWithMetrics('create_short_url');
 
     try {
-      await client.query('BEGIN');
+      await this.queryWithMetrics(client, 'BEGIN', [], 'begin_create_short_url');
 
-      const insertResult = await client.query<InsertUrlRow>(
+      const insertResult = await this.queryWithMetrics<InsertUrlRow>(
+        client,
         'INSERT INTO urls (long_url) VALUES ($1) RETURNING id',
         [longUrl],
+        'insert_url',
       );
       this.metricsService.increment('db_write_total', { operation: 'insert_url' });
 
       const id = Number(insertResult.rows[0]?.id);
       const shortCode = encodeBase62(id);
 
-      await client.query('UPDATE urls SET short_code = $1 WHERE id = $2', [shortCode, id]);
+      await this.queryWithMetrics(
+        client,
+        'UPDATE urls SET short_code = $1 WHERE id = $2',
+        [shortCode, id],
+        'update_short_code',
+      );
       this.metricsService.increment('db_write_total', { operation: 'update_short_code' });
-      await client.query('COMMIT');
+      await this.queryWithMetrics(client, 'COMMIT', [], 'commit_create_short_url');
 
       return {
         shortCode,
@@ -48,21 +55,31 @@ export class UrlsService implements OnModuleDestroy {
         longUrl,
       };
     } catch (error) {
-      await client.query('ROLLBACK');
+      await this.queryWithMetrics(client, 'ROLLBACK', [], 'rollback_create_short_url');
       throw error;
     } finally {
       client.release();
+      this.recordPoolSnapshot();
     }
   }
 
   async resolve(shortCode: string): Promise<string | null> {
-    const result = await this.pool.query<ResolveUrlRow>(
-      'SELECT long_url FROM urls WHERE short_code = $1',
-      [shortCode],
-    );
-    this.metricsService.increment('db_read_total', { operation: 'resolve_short_code' });
+    const client = await this.connectWithMetrics('resolve_short_code');
 
-    return result.rows[0]?.long_url ?? null;
+    try {
+      const result = await this.queryWithMetrics<ResolveUrlRow>(
+        client,
+        'SELECT long_url FROM urls WHERE short_code = $1',
+        [shortCode],
+        'resolve_short_code',
+      );
+      this.metricsService.increment('db_read_total', { operation: 'resolve_short_code' });
+
+      return result.rows[0]?.long_url ?? null;
+    } finally {
+      client.release();
+      this.recordPoolSnapshot();
+    }
   }
 
   async onModuleDestroy() {
@@ -79,5 +96,38 @@ export class UrlsService implements OnModuleDestroy {
     } catch {
       throw new BadRequestException('longUrl must be a valid http or https URL');
     }
+  }
+
+  private async connectWithMetrics(operation: string): Promise<PoolClient> {
+    this.recordPoolSnapshot();
+
+    const startedAt = Date.now();
+    const client = await this.pool.connect();
+
+    this.metricsService.observeMs('db_pool_wait_duration', Date.now() - startedAt, { operation });
+    this.recordPoolSnapshot();
+
+    return client;
+  }
+
+  private async queryWithMetrics<T extends QueryResultRow>(
+    client: PoolClient,
+    text: string,
+    values: unknown[],
+    operation: string,
+  ) {
+    const startedAt = Date.now();
+
+    try {
+      return await client.query<T>(text, values);
+    } finally {
+      this.metricsService.observeMs('db_query_duration', Date.now() - startedAt, { operation });
+    }
+  }
+
+  private recordPoolSnapshot() {
+    this.metricsService.setGauge('db_pool_total_count', this.pool.totalCount);
+    this.metricsService.setGauge('db_pool_idle_count', this.pool.idleCount);
+    this.metricsService.setGauge('db_pool_waiting_count', this.pool.waitingCount);
   }
 }
