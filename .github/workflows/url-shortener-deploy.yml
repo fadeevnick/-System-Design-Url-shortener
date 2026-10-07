@@ -37,7 +37,7 @@ jobs:
         run: |
           rm -rf .release
           mkdir -p .release/deploy
-          cp -R dist tools docs .release/
+          cp -R dist tools .release/
           cp -R deploy/systemd .release/deploy/
           cp package.json package-lock.json README.md .release/
           tar -czf release.tgz -C .release .

@@ -178,7 +178,29 @@ errorRatePct
 dbReadDelta
 dbReadsPerSuccessfulRequest
 estimatedMonthlyDbReads
+bottleneckDiagnostics.poolWaitAvgMs
+bottleneckDiagnostics.dbQueryAvgMs
+bottleneckDiagnostics.poolMaxConfigured
+bottleneckDiagnostics.poolActiveMaxObserved
+bottleneckDiagnostics.poolWaitingMaxObserved
 cacheThoughtExperiment.avoidableDbReads
+```
+
+Для диагностики bottleneck смотри дополнительные метрики приложения:
+
+```text
+db_pool_wait_duration{operation="resolve_short_code"}_avg_ms
+db_pool_wait_duration{operation="resolve_short_code"}_max_ms
+db_query_duration{operation="resolve_short_code"}_avg_ms
+db_query_duration{operation="resolve_short_code"}_max_ms
+db_pool_max_configured
+db_pool_total_count
+db_pool_idle_count
+db_pool_active_count
+db_pool_waiting_count
+db_pool_total_count_max_observed
+db_pool_active_count_max_observed
+db_pool_waiting_count_max_observed
 ```
 
 Интерпретация:
@@ -187,6 +209,64 @@ cacheThoughtExperiment.avoidableDbReads
 - высокий `p95Ms` важнее среднего latency;
 - `errorRatePct > 1` означает, что система уже не просто медленная, а нестабильная;
 - `avoidableDbReads` показывает, сколько PostgreSQL reads мог бы убрать Redis на hot-read workload.
+- если `db_pool_wait_duration` растет, запросы ждут свободное DB-соединение;
+- если `db_query_duration` растет, тормозит сам DB path: PostgreSQL, RDS, network или query execution;
+- если `db_pool_waiting_count_max_observed` больше 0 под нагрузкой, pool стал очередью хотя бы на пике;
+- если `db_pool_active_count_max_observed` упирается в `db_pool_max_configured`, приложение реально использует весь pool.
+
+По умолчанию `pg.Pool` использует `max=10`. Можно проверить другой размер pool:
+
+```bash
+PG_POOL_MAX=50 npm run start
+```
+
+Если после увеличения pool `db_pool_wait_duration` падает, а `p95` улучшается, bottleneck был в очереди connection pool. Если `db_query_duration` и RDS CPU/latency растут, bottleneck ближе к PostgreSQL/RDS.
+
+## Диагностика PG_POOL_MAX
+
+Для честного сравнения перезапускай приложение перед каждым вариантом `PG_POOL_MAX`, чтобы cumulative metrics начинались заново:
+
+```bash
+PG_POOL_MAX=10 npm run start
+```
+
+В другом терминале:
+
+```bash
+CONCURRENCY_STEPS=10,25,50,100,200 \
+STEP_SECONDS=30 \
+TARGET_P95_MS=100 \
+BASE_URL=http://localhost:3000 \
+npm run experiment:load -- capacity-step
+```
+
+Повтори тот же тест для:
+
+```bash
+PG_POOL_MAX=50 npm run start
+PG_POOL_MAX=100 npm run start
+```
+
+Сравнивай по каждой строке `capacity-step summary`:
+
+```text
+concurrency
+rps
+p95Ms
+p99Ms
+poolWaitAvgMs
+dbQueryAvgMs
+poolActiveMax
+poolWaitingMax
+```
+
+Как читать:
+
+- `PG_POOL_MAX=10`: если `poolWaitingMax > 0`, `poolActiveMax ≈ 10`, `poolWaitAvgMs` высокий, а `dbQueryAvgMs` низкий, узкое место в маленьком pool.
+- `PG_POOL_MAX=50`: если `poolWaitAvgMs` падает и `p95` улучшается, увеличение pool помогло.
+- `PG_POOL_MAX=100`: если `poolWaitAvgMs` почти не падает, а `dbQueryAvgMs` и `p95/p99` растут, больше соединений уже давят на RDS/CPU/network/query path.
+- Если `poolWaitingMax = 0`, но `dbQueryAvgMs` высокий, запросы не ждут pool: время уходит после получения соединения.
+- Если `rps` не растет при увеличении pool, а latency растет, pool не является главным bottleneck.
 
 ## Когда Redis реально нужен
 

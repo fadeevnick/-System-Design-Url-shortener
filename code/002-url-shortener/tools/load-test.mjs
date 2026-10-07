@@ -259,6 +259,21 @@ function metricDelta(before, after, name) {
   return (after.get(name) ?? 0) - (before.get(name) ?? 0);
 }
 
+function metricValue(metrics, name) {
+  return metrics.get(name) ?? 0;
+}
+
+function timerDelta(before, after, name) {
+  const count = metricDelta(before, after, `${name}_count`);
+  const sumMs = metricDelta(before, after, `${name}_sum_ms`);
+
+  return {
+    count,
+    avgMs: count > 0 ? round(sumMs / count, 1) : 0,
+    maxMsCumulative: metricValue(after, `${name}_max_ms`),
+  };
+}
+
 function summarize({ scenario, concurrency, result, metricsBefore, metricsAfter, wallMs }) {
   const ok = result.ok;
   const attempted = result.attempted;
@@ -282,6 +297,16 @@ function summarize({ scenario, concurrency, result, metricsBefore, metricsAfter,
   const estimatedMonthlyDbReads = Math.round(
     (dbReadDelta * 30 * 24 * 60 * 60) / (durationMs / 1000),
   );
+  const poolWait = timerDelta(
+    metricsBefore,
+    metricsAfter,
+    'db_pool_wait_duration{operation="resolve_short_code"}',
+  );
+  const dbQuery = timerDelta(
+    metricsBefore,
+    metricsAfter,
+    'db_query_duration{operation="resolve_short_code"}',
+  );
 
   return {
     baseUrl,
@@ -302,6 +327,20 @@ function summarize({ scenario, concurrency, result, metricsBefore, metricsAfter,
     dbUpdateDelta,
     dbReadsPerSuccessfulRequest: round(dbReadDelta / Math.max(ok, 1), 3),
     estimatedMonthlyDbReads,
+    bottleneckDiagnostics: {
+      poolWaitAvgMs: poolWait.avgMs,
+      poolWaitMaxMsCumulative: poolWait.maxMsCumulative,
+      dbQueryAvgMs: dbQuery.avgMs,
+      dbQueryMaxMsCumulative: dbQuery.maxMsCumulative,
+      poolMaxConfigured: metricValue(metricsAfter, 'db_pool_max_configured'),
+      poolTotalCount: metricValue(metricsAfter, 'db_pool_total_count'),
+      poolIdleCount: metricValue(metricsAfter, 'db_pool_idle_count'),
+      poolActiveCount: metricValue(metricsAfter, 'db_pool_active_count'),
+      poolWaitingCount: metricValue(metricsAfter, 'db_pool_waiting_count'),
+      poolTotalMaxObserved: metricValue(metricsAfter, 'db_pool_total_count_max_observed'),
+      poolActiveMaxObserved: metricValue(metricsAfter, 'db_pool_active_count_max_observed'),
+      poolWaitingMaxObserved: metricValue(metricsAfter, 'db_pool_waiting_count_max_observed'),
+    },
     cacheThoughtExperiment: {
       hotReadDbReadsWithBaseline: dbReadDelta,
       hotReadDbReadsWithIdealCache: dbReadDelta > 0 ? 1 : 0,
@@ -355,6 +394,10 @@ function printCapacityTable(results) {
       p95Ms: result.p95Ms,
       p99Ms: result.p99Ms,
       errorRatePct: result.errorRatePct,
+      poolWaitAvgMs: result.bottleneckDiagnostics.poolWaitAvgMs,
+      dbQueryAvgMs: result.bottleneckDiagnostics.dbQueryAvgMs,
+      poolActiveMax: result.bottleneckDiagnostics.poolActiveMaxObserved,
+      poolWaitingMax: result.bottleneckDiagnostics.poolWaitingMaxObserved,
       dbReadDelta: result.dbReadDelta,
       dbReadsPerRequest: result.dbReadsPerSuccessfulRequest,
     })),
