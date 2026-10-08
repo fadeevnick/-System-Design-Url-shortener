@@ -221,7 +221,6 @@ PG_POOL_MAX=50 npm run start
 ```
 
 Если после увеличения pool `db_pool_wait_duration` падает, а `p95` улучшается, bottleneck был в очереди connection pool. Если `db_query_duration` и RDS CPU/latency растут, bottleneck ближе к PostgreSQL/RDS.
-<<<<<<< HEAD
 
 ## Диагностика PG_POOL_MAX
 
@@ -268,8 +267,8 @@ poolWaitingMax
 - `PG_POOL_MAX=100`: если `poolWaitAvgMs` почти не падает, а `dbQueryAvgMs` и `p95/p99` растут, больше соединений уже давят на RDS/CPU/network/query path.
 - Если `poolWaitingMax = 0`, но `dbQueryAvgMs` высокий, запросы не ждут pool: время уходит после получения соединения.
 - Если `rps` не растет при увеличении pool, а latency растет, pool не является главным bottleneck.
-=======
->>>>>>> 94c08b02aedee8f47ad8f94a47542473c8db6e52
+
+Для более правильного теста с отдельной load-test EC2 и fixed RPS через k6 смотри [load-testing.md](load-testing.md).
 
 ## Когда Redis реально нужен
 

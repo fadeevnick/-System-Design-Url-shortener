@@ -25,6 +25,7 @@ API будет доступен на `http://localhost:3000`.
 
 - [docs/evolution.md](docs/evolution.md) — порядок усложнения архитектуры.
 - [docs/experiments.md](docs/experiments.md) — как запускать baseline experiments.
+- [docs/load-testing.md](docs/load-testing.md) — protocol для k6 и отдельной load-test EC2.
 
 Полезные endpoints:
 

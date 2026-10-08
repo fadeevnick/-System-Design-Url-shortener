@@ -71,8 +71,9 @@ jobs:
           cat > .env << ENVEOF
           PORT=${{ secrets.PORT }}
           BASE_URL=${{ secrets.BASE_URL }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
           PG_POOL_MAX=${{ secrets.PG_POOL_MAX }}
+          DATABASE_URL_MICRO=${{ secrets.DATABASE_URL_MICRO }}
+          DATABASE_URL_SMALL=${{ secrets.DATABASE_URL_SMALL }}
           ENVEOF
 
           sudo cp "$APP_DIR/deploy/systemd/url-shortener.service" "/etc/systemd/system/$SERVICE_NAME.service"

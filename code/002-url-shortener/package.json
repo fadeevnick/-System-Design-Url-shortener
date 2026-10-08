@@ -7,6 +7,7 @@
     "start:dev": "nest start --watch",
     "build": "nest build",
     "experiment:load": "node tools/load-test.mjs",
+    "experiment:k6": "k6 run tools/k6/url-shortener.js",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\""
   },
