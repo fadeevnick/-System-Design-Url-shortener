@@ -54,8 +54,6 @@ export class MetricsService {
     }
 
     for (const [key, value] of [...this.timers.entries()].sort()) {
-      lines.push(`${key}_count ${value.count}`);
-      lines.push(`${key}_sum_ms ${Math.round(value.sumMs)}`);
       lines.push(`${key}_avg_ms ${Math.round(value.sumMs / value.count)}`);
       lines.push(`${key}_max_ms ${Math.round(value.maxMs)}`);
     }

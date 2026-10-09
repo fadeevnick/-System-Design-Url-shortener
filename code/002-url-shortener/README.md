@@ -26,6 +26,8 @@ API будет доступен на `http://localhost:3000`.
 - [docs/evolution.md](docs/evolution.md) — порядок усложнения архитектуры.
 - [docs/experiments.md](docs/experiments.md) — как запускать baseline experiments.
 - [docs/load-testing.md](docs/load-testing.md) — bottleneck-driven protocol для k6 и отдельной load-test EC2.
+- [docs/metrics.md](docs/metrics.md) — что означает каждая метрика из `/metrics`.
+- [docs/production-readiness-audit.md](docs/production-readiness-audit.md) — какие части проекта учебные и чем их заменяют в production.
 
 Полезные endpoints:
 
@@ -34,13 +36,17 @@ curl http://localhost:3000/health
 curl http://localhost:3000/metrics
 ```
 
-Главный нагрузочный сценарий перед добавлением Redis:
+Главный нагрузочный сценарий перед добавлением Redis запускается через k6 с отдельной load-test EC2:
 
 ```bash
-CONCURRENCY_STEPS=10,25,50,100,200 \
-STEP_SECONDS=30 \
+BASE_URL=http://<app-private-ip>:3000 \
+WORKLOAD=hot-read \
+RATE=1000 \
+DURATION=3m \
 TARGET_P95_MS=300 \
-npm run experiment:load -- capacity-step
+MAX_ERROR_RATE=0.01 \
+MAX_DROPPED_ITERATIONS=1 \
+npm run experiment:k6 -- --summary-export results-hot-read-1000.json
 ```
 
 ## PostgreSQL в GCP

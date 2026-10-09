@@ -109,16 +109,19 @@ curl http://localhost:3000/metrics
 
 ## Run experiments after deploy
 
-На EC2:
+Основные load tests запускаются не на app EC2, а на отдельной load-test EC2:
 
 ```bash
 cd ~/002-url-shortener
 
-CONCURRENCY_STEPS=10,25,50,100,200 \
-STEP_SECONDS=30 \
+BASE_URL=http://<app-private-ip>:3000 \
+WORKLOAD=hot-read \
+RATE=1000 \
+DURATION=3m \
 TARGET_P95_MS=300 \
-BASE_URL=http://localhost:3000 \
-npm run experiment:load -- capacity-step
+MAX_ERROR_RATE=0.01 \
+MAX_DROPPED_ITERATIONS=1 \
+npm run experiment:k6 -- --summary-export results-hot-read-1000.json
 ```
 
 ## Important notes

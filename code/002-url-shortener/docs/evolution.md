@@ -31,15 +31,19 @@
 
 - `GET /health`;
 - `GET /metrics`;
-- `npm run experiment:load`.
+- `npm run experiment:k6`.
 
-Маленький тест `hot-read 1000 20` - это только sanity check. Реальное решение принимаем после step-test:
+Реальное решение принимаем после bottleneck-driven k6 тестов с отдельной load-test EC2:
 
 ```bash
-CONCURRENCY_STEPS=10,25,50,100,200 \
-STEP_SECONDS=30 \
+BASE_URL=http://<app-private-ip>:3000 \
+WORKLOAD=hot-read \
+RATE=1000 \
+DURATION=3m \
 TARGET_P95_MS=300 \
-npm run experiment:load -- capacity-step
+MAX_ERROR_RATE=0.01 \
+MAX_DROPPED_ITERATIONS=1 \
+npm run experiment:k6 -- --summary-export results-hot-read-1000.json
 ```
 
 ## 3. Read-heavy scenario -> Redis cache-aside

@@ -204,6 +204,8 @@ curl http://<app-private-ip>:3000/metrics > metrics-<workload>-<rate>.txt
 sudo journalctl -u url-shortener -n 300 --no-pager > logs-<workload>-<rate>.txt
 ```
 
+Описание каждой app metric из `/metrics` смотри в [metrics.md](metrics.md).
+
 RDS CloudWatch:
 
 ```bash
@@ -228,6 +230,40 @@ CPUUtilization
 NetworkIn
 NetworkOut
 StatusCheckFailed
+```
+
+App EC2 CloudWatch:
+
+```bash
+for metric in CPUUtilization NetworkIn NetworkOut StatusCheckFailed; do
+  echo "===== app EC2: $metric ====="
+  aws cloudwatch get-metric-statistics \
+    --region eu-central-1 \
+    --namespace AWS/EC2 \
+    --metric-name "$metric" \
+    --dimensions Name=InstanceId,Value=<app-ec2-instance-id> \
+    --start-time "$START_TIME" \
+    --end-time "$END_TIME" \
+    --period 60 \
+    --statistics Average Maximum
+done
+```
+
+Load-test EC2 CloudWatch:
+
+```bash
+for metric in CPUUtilization NetworkIn NetworkOut StatusCheckFailed; do
+  echo "===== load-test EC2: $metric ====="
+  aws cloudwatch get-metric-statistics \
+    --region eu-central-1 \
+    --namespace AWS/EC2 \
+    --metric-name "$metric" \
+    --dimensions Name=InstanceId,Value=<load-test-ec2-instance-id> \
+    --start-time "$START_TIME" \
+    --end-time "$END_TIME" \
+    --period 60 \
+    --statistics Average Maximum
+done
 ```
 
 ## 6. Result row
