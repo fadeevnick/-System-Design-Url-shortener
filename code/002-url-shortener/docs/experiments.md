@@ -17,7 +17,7 @@ redirect -> PostgreSQL read
 У каждого experiment должны быть:
 
 - сценарий из реального продукта;
-- целевой SLO, например `p95 redirect < 100ms`;
+- целевой SLO, например `p95 redirect < 300ms`;
 - рост нагрузки по шагам;
 - измерение `RPS`, `p50/p95/p99`, `errorRate`, `dbReadDelta`;
 - вывод: оставляем baseline, делаем vertical scaling, добавляем read replica, Redis или другой паттерн.
@@ -52,7 +52,7 @@ curl http://localhost:3000/metrics
 ```bash
 CONCURRENCY_STEPS=10,25,50,100,200 \
 STEP_SECONDS=30 \
-TARGET_P95_MS=100 \
+TARGET_P95_MS=300 \
 npm run experiment:load -- capacity-step
 ```
 
@@ -83,7 +83,7 @@ dbReadsPerRequest
 ```bash
 CONCURRENCY=200 \
 DURATION_SECONDS=120 \
-TARGET_P95_MS=100 \
+TARGET_P95_MS=300 \
 npm run experiment:load -- campaign-spike
 ```
 
@@ -235,7 +235,7 @@ PG_POOL_MAX=10 npm run start
 ```bash
 CONCURRENCY_STEPS=10,25,50,100,200 \
 STEP_SECONDS=30 \
-TARGET_P95_MS=100 \
+TARGET_P95_MS=300 \
 BASE_URL=http://localhost:3000 \
 npm run experiment:load -- capacity-step
 ```

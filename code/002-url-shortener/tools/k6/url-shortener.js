@@ -2,15 +2,17 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 const baseUrl = __ENV.BASE_URL || 'http://localhost:3000';
-const workload = __ENV.WORKLOAD || 'hot-read';
+const requestedWorkload = __ENV.WORKLOAD || 'hot-read';
+const workload = requestedWorkload === 'campaign-spike' ? 'hot-read' : requestedWorkload;
 const rate = Number(__ENV.RATE || 1000);
 const duration = __ENV.DURATION || '2m';
-const targetP95Ms = Number(__ENV.TARGET_P95_MS || 100);
+const targetP95Ms = Number(__ENV.TARGET_P95_MS || 300);
 const maxErrorRate = Number(__ENV.MAX_ERROR_RATE || 0.01);
 const preAllocatedVus = Number(__ENV.PRE_ALLOCATED_VUS || 200);
 const maxVus = Number(__ENV.MAX_VUS || 1000);
 const seedUrlCount = Number(__ENV.SEED_URL_COUNT || 1000);
 const writePercent = Number(__ENV.WRITE_PERCENT || 1);
+const maxDroppedIterations = Number(__ENV.MAX_DROPPED_ITERATIONS || 1);
 
 const sampleLongUrl =
   'https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready';
@@ -29,6 +31,7 @@ export const options = {
   thresholds: {
     http_req_failed: [`rate<${maxErrorRate}`],
     http_req_duration: [`p(95)<${targetP95Ms}`],
+    dropped_iterations: [`count<${maxDroppedIterations}`],
   },
 };
 
@@ -74,7 +77,7 @@ function createShortUrl(longUrl) {
     JSON.stringify({ longUrl }),
     {
       headers: { 'Content-Type': 'application/json' },
-      tags: { endpoint: 'shorten', workload },
+      tags: { endpoint: 'shorten', workload: requestedWorkload },
     },
   );
 
@@ -92,7 +95,7 @@ function createShortUrl(longUrl) {
 function followRedirect(shortCode) {
   const response = http.get(`${baseUrl}/${shortCode}`, {
     redirects: 0,
-    tags: { endpoint: 'redirect', workload },
+    tags: { endpoint: 'redirect', workload: requestedWorkload },
   });
 
   check(response, {

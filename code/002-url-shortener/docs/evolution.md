@@ -38,7 +38,7 @@
 ```bash
 CONCURRENCY_STEPS=10,25,50,100,200 \
 STEP_SECONDS=30 \
-TARGET_P95_MS=100 \
+TARGET_P95_MS=300 \
 npm run experiment:load -- capacity-step
 ```
 

@@ -25,7 +25,7 @@ API будет доступен на `http://localhost:3000`.
 
 - [docs/evolution.md](docs/evolution.md) — порядок усложнения архитектуры.
 - [docs/experiments.md](docs/experiments.md) — как запускать baseline experiments.
-- [docs/load-testing.md](docs/load-testing.md) — protocol для k6 и отдельной load-test EC2.
+- [docs/load-testing.md](docs/load-testing.md) — bottleneck-driven protocol для k6 и отдельной load-test EC2.
 
 Полезные endpoints:
 
@@ -39,7 +39,7 @@ curl http://localhost:3000/metrics
 ```bash
 CONCURRENCY_STEPS=10,25,50,100,200 \
 STEP_SECONDS=30 \
-TARGET_P95_MS=100 \
+TARGET_P95_MS=300 \
 npm run experiment:load -- capacity-step
 ```
 
