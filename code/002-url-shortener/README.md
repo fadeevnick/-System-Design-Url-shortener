@@ -26,6 +26,7 @@ API будет доступен на `http://localhost:3000`.
 - [docs/evolution.md](docs/evolution.md) — порядок усложнения архитектуры.
 - [docs/experiments.md](docs/experiments.md) — как запускать baseline experiments.
 - [docs/load-testing.md](docs/load-testing.md) — bottleneck-driven protocol для k6 и отдельной load-test EC2.
+- [../../architecture_implement/labs/bottleneck-lab-roadmap.md](../../architecture_implement/labs/bottleneck-lab-roadmap.md) — план labs для разных scaling решений.
 - [docs/metrics.md](docs/metrics.md) — что означает каждая метрика из `/metrics`.
 - [docs/production-readiness-audit.md](docs/production-readiness-audit.md) — какие части проекта учебные и чем их заменяют в production.
 

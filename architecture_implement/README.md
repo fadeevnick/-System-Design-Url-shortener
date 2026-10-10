@@ -7,6 +7,7 @@
 - **`case-studies/`** — разборы конкретных задач. Каждый кейс самодостаточен: формулировка задачи, требования, 1–N альтернативных решений, трейд-оффы, выводы.
 - **`patterns/`** — переиспользуемые архитектурные паттерны (Outbox, Saga, Idempotency Key и т.д.). Описываются один раз, case studies ссылаются.
 - **`foundations/`** — вводные материалы перед паттернами: базовые сущности, read/write path, scaling data, cache basics, distributed failures.
+- **`labs/`** — практические bottleneck labs: как воспроизводить проблемы, выбирать scaling decision и проверять, что решение помогло.
 - **`glossary.md`** — короткие определения базовых терминов.
 - **`_template-case-study.md`** / **`_template-pattern.md`** — шаблоны для новых записей.
 
@@ -49,6 +50,13 @@
 | 015 | [[015-leaderboard]] — Leaderboard (Gaming / Live Scoring) | Realtime рейтинги игроков, rank/range queries, weekly reset, friends leaderboard и шардирование. | gaming | [[sorted-set-index]], [[caching-strategies]], [[consistent-hashing]], [[event-driven-architecture]] |
 | 016 | [[016-distributed-cache]] — Distributed Cache (Redis Cluster Design) | Распределённый кэш: hash slots, replication/failover, eviction, warming, hot keys и cache stampede. | infrastructure | [[cache-stampede]], [[caching-strategies]], [[consistent-hashing]] |
 | 017 | [[017-distributed-lock]] — Distributed Lock (Redis Redlock / ZooKeeper / etcd) | Distributed mutex, TTL/lease, Redlock trade-offs, ZooKeeper/etcd locks и fencing tokens. | infrastructure | [[fencing-token]], [[idempotency-key]], [[retry-with-backoff]] |
+
+## Labs
+
+| File | Purpose |
+|------|---------|
+| [[bottleneck-lab-roadmap]] | Общая карта bottleneck-сценариев и scaling decisions по всем case studies. |
+| [[002-url-shortener-labs]] | Детальная дорожная карта экспериментов для URL Shortener. |
 
 ## Patterns
 

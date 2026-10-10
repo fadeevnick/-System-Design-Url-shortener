@@ -124,13 +124,13 @@ _max_ms
 Как читать:
 
 ```text
-avg низкий, max высокий
+http_request_duration_avg_ms низкий, http_request_duration_max_ms высокий
 => обычно быстро, но были spikes.
 
-http max ~= db_pool_wait max
+http_request_duration_max_ms ~= db_pool_wait_duration_max_ms
 => самый длинный HTTP request в основном ждал DB connection.
 
-http avg ~= db pool wait avg + db query avg
+http_request_duration_avg_ms ~= db_pool_wait_duration_avg_ms + db_query_duration_avg_ms
 => latency в основном объясняется DB path.
 ```
 
@@ -309,7 +309,7 @@ db_pool_total_count 10
 `total_count` включает:
 
 ```text
-active connections + idle connections
+db_pool_active_count + db_pool_idle_count
 ```
 
 После теста часто можно увидеть:
@@ -348,9 +348,9 @@ db_pool_idle_count 10
 Если после теста:
 
 ```text
-total=10
-idle=10
-active=0
+db_pool_total_count = 10
+db_pool_idle_count = 10
+db_pool_active_count = 0
 ```
 
 это значит:
@@ -378,19 +378,19 @@ db_pool_active_count 0
 Считаем так:
 
 ```text
-active = totalCount - idleCount
+db_pool_active_count = db_pool_total_count - db_pool_idle_count
 ```
 
 В спокойном состоянии обычно:
 
 ```text
-active=0
+db_pool_active_count = 0
 ```
 
 Во время нагрузки может быть:
 
 ```text
-active=100
+db_pool_active_count = 100
 ```
 
 ## 9. `db_pool_waiting_count`
@@ -410,7 +410,7 @@ db_pool_waiting_count 0
 Если:
 
 ```text
-waiting_count > 0
+db_pool_waiting_count > 0
 ```
 
 значит pool стал очередью.
@@ -442,29 +442,29 @@ db_pool_total_count_max_observed 100
 Это high-water mark:
 
 ```text
-max(active + idle)
+max(db_pool_active_count + db_pool_idle_count)
 ```
 
 Пример:
 
 ```text
-t1: active=10, idle=0,  total=10
-t2: active=80, idle=20, total=100
-t3: active=5,  idle=95, total=100
+t1: db_pool_active_count=10, db_pool_idle_count=0,  db_pool_total_count=10
+t2: db_pool_active_count=80, db_pool_idle_count=20, db_pool_total_count=100
+t3: db_pool_active_count=5,  db_pool_idle_count=95, db_pool_total_count=100
 ```
 
 Тогда:
 
 ```text
-totalMaxObserved = 100
-activeMaxObserved = 80
+db_pool_total_count_max_observed = 100
+db_pool_active_count_max_observed = 80
 ```
 
 Как читать:
 
 ```text
-poolMaxConfigured = 100
-poolTotalMaxObserved = 100
+db_pool_max_configured = 100
+db_pool_total_count_max_observed = 100
 ```
 
 значит приложение реально доросло до лимита pool по открытым connections.
@@ -472,8 +472,8 @@ poolTotalMaxObserved = 100
 Если:
 
 ```text
-poolMaxConfigured = 100
-poolTotalMaxObserved = 25
+db_pool_max_configured = 100
+db_pool_total_count_max_observed = 25
 ```
 
 значит pool не расширялся выше 25 одновременно открытых connections.
@@ -501,7 +501,7 @@ db_pool_active_count_max_observed 100
 Как читать:
 
 ```text
-activeMax == PG_POOL_MAX
+db_pool_active_count_max_observed == db_pool_max_configured
 ```
 
 значит pool был полностью занят.
@@ -509,7 +509,7 @@ activeMax == PG_POOL_MAX
 Если одновременно:
 
 ```text
-waitingMax > 0
+db_pool_waiting_count_max_observed > 0
 ```
 
 значит requests стояли в очереди за connection.
@@ -517,9 +517,9 @@ waitingMax > 0
 Пример:
 
 ```text
-poolMaxConfigured = 100
-poolActiveMaxObserved = 100
-poolWaitingMaxObserved = 497
+db_pool_max_configured = 100
+db_pool_active_count_max_observed = 100
+db_pool_waiting_count_max_observed = 497
 ```
 
 Вывод:
@@ -548,19 +548,19 @@ db_pool_waiting_count_max_observed 497
 Как читать:
 
 ```text
-waitingMax = 0
+db_pool_waiting_count_max_observed = 0
 ```
 
 Pool не был очередью.
 
 ```text
-waitingMax > 0
+db_pool_waiting_count_max_observed > 0
 ```
 
 В какой-то момент requests ждали connection.
 
 ```text
-waitingMax очень высокий
+db_pool_waiting_count_max_observed очень высокий
 ```
 
 Pool был сильно насыщен, возможны latency spikes.
@@ -568,8 +568,8 @@ Pool был сильно насыщен, возможны latency spikes.
 Пример:
 
 ```text
-waitingMax = 497
-pool wait max = 2405ms
+db_pool_waiting_count_max_observed = 497
+db_pool_wait_duration_max_ms = 2405
 ```
 
 Это значит:
@@ -633,22 +633,22 @@ pool wait растет
 Как читать:
 
 ```text
-poolWaitAvg низкий, poolWaitMax высокий
+db_pool_wait_duration_avg_ms низкий, db_pool_wait_duration_max_ms высокий
 => обычно connection получаем быстро, но были spikes.
 
-poolWaitAvg высокий
+db_pool_wait_duration_avg_ms высокий
 => много requests регулярно ждут connection.
 
-poolWaitMax примерно равен httpMax
+db_pool_wait_duration_max_ms примерно равен http_request_duration_max_ms
 => самый медленный HTTP request в основном ждал connection.
 ```
 
 Пример:
 
 ```text
-poolWaitAvg = 4ms
-poolWaitMax = 2405ms
-httpMax = 2538ms
+db_pool_wait_duration_avg_ms = 4
+db_pool_wait_duration_max_ms = 2405
+http_request_duration_max_ms = 2538
 ```
 
 Вывод:
@@ -720,16 +720,16 @@ _max_ms
 Как читать:
 
 ```text
-dbQueryAvg растет, poolWait низкий
+db_query_duration_avg_ms растет, db_pool_wait_duration_avg_ms низкий
 => bottleneck после получения connection.
 
-dbQueryAvg растет вместе с RDS CPU
+db_query_duration_avg_ms растет вместе с RDS CPU
 => возможно DB CPU bottleneck.
 
-dbQueryAvg растет вместе с ReadLatency/IOPS
+db_query_duration_avg_ms растет вместе с RDS ReadLatency/ReadIOPS
 => возможно storage bottleneck.
 
-dbQueryAvg растет, но RDS CPU/IO/network нормальные
+db_query_duration_avg_ms растет, но RDS CPU/IO/network нормальные
 => возможно overhead большого числа коротких DB round trips,
    Postgres scheduling,
    network RTT,
@@ -739,8 +739,8 @@ dbQueryAvg растет, но RDS CPU/IO/network нормальные
 Пример:
 
 ```text
-dbQueryAvg = 9ms
-dbQueryMax = 634ms
+db_query_duration_avg_ms = 9
+db_query_duration_max_ms = 634
 ```
 
 Это говорит:
@@ -827,9 +827,9 @@ http duration ~= pool wait + query duration + small app overhead
 Пример:
 
 ```text
-poolWaitAvg = 4ms
-dbQueryAvg = 9ms
-httpAvg = 13ms
+db_pool_wait_duration_avg_ms = 4
+db_query_duration_avg_ms = 9
+http_request_duration_avg_ms = 13
 ```
 
 Очень чистая картина:
@@ -851,14 +851,14 @@ db_pool_max_configured 100
 db_pool_active_count_max_observed 100
 db_pool_waiting_count_max_observed 497
 
-db_pool_wait_duration avg 4ms
-db_pool_wait_duration max 2405ms
+db_pool_wait_duration{operation="resolve_short_code"}_avg_ms 4
+db_pool_wait_duration{operation="resolve_short_code"}_max_ms 2405
 
-db_query_duration avg 9ms
-db_query_duration max 634ms
+db_query_duration{operation="resolve_short_code"}_avg_ms 9
+db_query_duration{operation="resolve_short_code"}_max_ms 634
 
-http_request_duration avg 13ms
-http_request_duration max 2538ms
+http_request_duration{method="GET",route="/:shortCode",status="302"}_avg_ms 13
+http_request_duration{method="GET",route="/:shortCode",status="302"}_max_ms 2538
 ```
 
 Интерпретация:
@@ -868,19 +868,19 @@ http_request_duration max 2538ms
    457k reads.
 
 2. Pool реально доходил до лимита:
-   active max = 100 из 100.
+   db_pool_active_count_max_observed = 100 из db_pool_max_configured = 100.
 
 3. В пике была большая очередь:
-   waiting max = 497.
+   db_pool_waiting_count_max_observed = 497.
 
 4. Средний request был быстрым:
-   http avg = 13ms.
+   http_request_duration_avg_ms = 13.
 
 5. Но tail latency была большой:
-   http max = 2538ms.
+   http_request_duration_max_ms = 2538.
 
 6. Главная причина worst-case latency:
-   pool wait max = 2405ms.
+   db_pool_wait_duration_max_ms = 2405.
 ```
 
 То есть для такого теста:
@@ -948,9 +948,9 @@ HTTP latency ~= pool wait + DB query + app overhead
 Если видим:
 
 ```text
-http avg = 13ms
-pool wait avg = 4ms
-db query avg = 9ms
+http_request_duration_avg_ms = 13
+db_pool_wait_duration_avg_ms = 4
+db_query_duration_avg_ms = 9
 ```
 
 значит app overhead почти нулевой, а весь request - это DB path.

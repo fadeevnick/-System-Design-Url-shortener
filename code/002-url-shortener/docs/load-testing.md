@@ -10,6 +10,8 @@ load-test EC2 -> app EC2 -> RDS PostgreSQL
 
 Redis, PgBouncer, read replicas, larger RDS и horizontal scaling добавляем только после experiment, который показывает конкретную проблему.
 
+Дорожная карта bottleneck-сценариев и связь с другими case studies описаны в [architecture_implement/labs/bottleneck-lab-roadmap.md](../../../architecture_implement/labs/bottleneck-lab-roadmap.md).
+
 ## 1. Основной цикл
 
 Каждая итерация идет одинаково:

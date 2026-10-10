@@ -72,7 +72,7 @@ jobs:
           PORT=${{ secrets.PORT }}
           BASE_URL=${{ secrets.BASE_URL }}
           PG_POOL_MAX=${{ secrets.PG_POOL_MAX }}
-          DATABASE_URL_MICRO=${{ secrets.DATABASE_URL_MICRO }}
+          DATABASE_URL=${{ secrets.DATABASE_URL_LARGE }}
           DATABASE_URL_SMALL=${{ secrets.DATABASE_URL_SMALL }}
           ENVEOF
 
