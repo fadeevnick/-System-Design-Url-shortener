@@ -12,6 +12,18 @@ Redis, PgBouncer, read replicas, larger RDS и horizontal scaling добавля
 
 Дорожная карта bottleneck-сценариев и связь с другими case studies описаны в [architecture_implement/labs/bottleneck-lab-roadmap.md](../../../architecture_implement/labs/bottleneck-lab-roadmap.md).
 
+Текущая фаза `002-url-shortener`:
+
+```text
+hot-read DB-only scale-up
+
+Сначала продолжаем текущий сценарий hot-read без Redis/cache.
+Цель - попробовать довести PostgreSQL-only read path примерно до 5-6k RPS
+и фиксировать каждый новый bottleneck по метрикам.
+
+К cold-read, mixed, write-burst и large-dataset сценариям переходим после этой фазы.
+```
+
 ## 1. Основной цикл
 
 Каждая итерация идет одинаково:
@@ -332,8 +344,9 @@ Repeated DB reads на hot-read:
 ```text
 1. доказать dbReadsPerRequest ~= 1;
 2. доказать, что pool/query/RDS pressure связан с redirects;
-3. добавить Redis cache-aside отдельным experiment;
-4. сравнить до/после по p95, p99, dbReadDelta, RDS metrics.
+3. в текущей DB-only фазе сначала проверить релевантные DB-only изменения;
+4. Redis cache-aside оставить отдельным experiment после DB-only исследований;
+5. сравнить до/после по p95, p99, dbReadDelta, RDS metrics.
 ```
 
 RDS CPU/IO на cold-read:

@@ -124,6 +124,26 @@ MAX_DROPPED_ITERATIONS=1 \
 npm run experiment:k6 -- --summary-export results-hot-read-1000.json
 ```
 
+## Horizontal scaling with CDK
+
+Для production-like экспериментов с несколькими app instances используем AWS CDK:
+
+```text
+infra/cdk
+```
+
+CDK stack создает:
+
+```text
+internal ALB -> Auto Scaling Group -> app EC2 instances
+```
+
+Подробные команды:
+
+```text
+code/002-url-shortener/infra/cdk/README.md
+```
+
 ## Important notes
 
 - Не добавляй `.env` в git.

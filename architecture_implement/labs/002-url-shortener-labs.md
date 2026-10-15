@@ -42,6 +42,17 @@ Baseline constraints:
 один RDS PostgreSQL primary
 ```
 
+Current strategy:
+
+```text
+Сначала продолжаем текущий hot-read DB-only сценарий.
+Цель фазы - попробовать довести PostgreSQL-only read path примерно до 5-6k RPS
+через релевантные DB-only изменения и зафиксировать, где именно появляются новые bottlenecks.
+
+Redis/cache-aside пока не добавляем.
+К cold-read, mixed, write-burst и large-dataset labs переходим после этой фазы.
+```
+
 Main SLO:
 
 ```text
@@ -547,38 +558,47 @@ Anti-pattern:
 
 ## Recommended Order
 
-1. Завершить `PG_POOL_MAX` lab на `hot-read RATE=1500`.
-2. Повторить `RATE=1500` с `PG_POOL_MAX=150`.
-3. Если помогает - повысить hot-read до `RATE=2000`.
-4. Если появляется RDS resource bottleneck - провести larger RDS lab.
-5. Если repeated DB reads остаются главным источником pressure - добавить Redis cache-aside.
-6. После read path добавить click analytics и показать queue lab.
-7. После single app показать horizontal app scaling и PgBouncer lab.
-8. После этого перейти к другим case-study labs.
+1. Зафиксировать текущий hot-read DB-only baseline: `1500 RPS PASS`, `2000 RPS FAIL`.
+2. Оставаться в `hot-read` и доводить DB-only path примерно до `5-6k RPS`, не добавляя Redis/cache.
+3. Для каждого следующего шага выбирать главный кандидат по текущим метрикам, а не перебирать все паттерны подряд.
+4. Если bottleneck - pool/backpressure, подобрать `PG_POOL_MAX` и per-query concurrency.
+5. Если bottleneck - RDS CPU/IO/memory/query latency, провести larger RDS lab.
+6. Если bottleneck - app CPU/event loop/network, провести app EC2 vertical scaling lab.
+7. Если bottleneck - single app instance при нормальной DB, провести horizontal app scaling lab.
+8. Если bottleneck - connection multiplication после нескольких app instances, провести PgBouncer lab.
+9. После hot-read DB-only фазы перейти к `cold-read`, `mixed`, `write-burst` и large-dataset labs.
+10. Redis cache-aside оставить отдельным experiment после DB-only исследований, когда решение будет подтверждено метриками.
 
 ## Current State
 
 Already observed:
 
 ```text
-db.t3.small + PG_POOL_MAX=100
-hot-read 500 RPS -> PASS
-hot-read 1000 RPS -> PASS with note
-hot-read 1500 RPS -> POOL_BOTTLENECK
+db.t3.large + single app + PG_POOL_MAX=80
+hot-read 1500 RPS -> PASS
+hot-read 2000 RPS -> FAIL
+
+2000 RPS result:
+p95 ~= 1.07s
+errorRate = 0%
+dropped_iterations = 1555
+dbReadsPerRequest ~= 1
+poolWaitAvg ~= 130ms
+dbQueryAvg ~= 11ms
+RDS CPU ~= 32%
+app EC2 CPU max ~= 56%
+load-test EC2 CPU max ~= 44%
 ```
 
-Next experiment:
+Current classification:
 
 ```text
-WORKLOAD=hot-read
-RATE=1500
-DURATION=3m
-TARGET_P95_MS=300
-PG_POOL_MAX=150
+HOT_READ_DB_ONLY_POOL_WAIT
 ```
 
 Question:
 
 ```text
-Поможет ли увеличение pool снять очередь без роста dbQueryAvg/RDS pressure?
+Какие DB-only изменения реально двигают hot-read limit toward 5-6k RPS,
+и какой следующий bottleneck появляется после каждого изменения?
 ```
