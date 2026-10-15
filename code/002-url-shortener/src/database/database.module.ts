@@ -13,7 +13,7 @@ export const PG_POOL = Symbol('PG_POOL');
           connectionString:
             process.env.DATABASE_URL ??
             'postgres://url_shortener:url_shortener@localhost:5432/url_shortener',
-          //max: Number(process.env.PG_POOL_MAX ?? 10),
+          max: Number(process.env.PG_POOL_MAX ?? 10),
           ssl: {
             rejectUnauthorized: false,
           },
