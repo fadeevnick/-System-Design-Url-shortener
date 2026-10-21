@@ -1,4 +1,11 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Headers,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { MetricsService } from '../observability/metrics.service';
 
 @Controller()
@@ -14,5 +21,17 @@ export class SystemController {
   @Header('Content-Type', 'text/plain; charset=utf-8')
   metrics() {
     return this.metricsService.renderText();
+  }
+
+  @Post('metrics/reset')
+  resetMetrics(@Headers('x-metrics-reset-token') token?: string) {
+    const expectedToken = process.env.METRICS_RESET_TOKEN;
+
+    if (!expectedToken || token !== expectedToken) {
+      throw new UnauthorizedException();
+    }
+
+    this.metricsService.reset();
+    return { status: 'ok' };
   }
 }

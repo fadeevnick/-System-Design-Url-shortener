@@ -42,6 +42,12 @@ export class MetricsService {
     this.gauges.set(key, current === undefined ? value : Math.max(current, value));
   }
 
+  reset() {
+    this.counters.clear();
+    this.gauges.clear();
+    this.timers.clear();
+  }
+
   renderText(): string {
     const lines: string[] = [];
 

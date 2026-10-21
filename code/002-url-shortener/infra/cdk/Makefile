@@ -1,8 +1,10 @@
 CDK ?= npx cdk
+AWS_REGION ?= eu-central-1
+STACK_NAME ?= UrlShortenerAlbAsgStack
 
 VPC_ID ?= vpc-07134e7a97e7796cf
 SUBNET_IDS ?= subnet-0bbdaab1636648a64,subnet-082b44fc2ea443019
-APP_AMI_ID ?= ami-0506d343fca1001f3
+APP_AMI_ID ?= ami-0306f2ff8351aa29d
 APP_SECURITY_GROUP_IDS ?= sg-05c5edc7069a2d54b,sg-0d006fddd15aa4193
 LOAD_TEST_SECURITY_GROUP_ID ?= sg-0a117527190862864
 AVAILABILITY_ZONES ?= eu-central-1a,eu-central-1b
@@ -40,5 +42,10 @@ synth: check-context
 deploy: check-context
 	$(CDK) deploy $(CDK_CONTEXT)
 
-destroy: check-context
-	$(CDK) destroy $(CDK_CONTEXT)
+destroy:
+	aws cloudformation delete-stack \
+		--region $(AWS_REGION) \
+		--stack-name $(STACK_NAME)
+	aws cloudformation wait stack-delete-complete \
+		--region $(AWS_REGION) \
+		--stack-name $(STACK_NAME)

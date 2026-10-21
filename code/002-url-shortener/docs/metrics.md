@@ -961,3 +961,20 @@ db_query_duration_avg_ms = 9
 baseline API -> PostgreSQL работает,
 но read path полностью зависит от PostgreSQL round trip.
 ```
+# Metrics Reset For Load Tests
+
+Application metrics are in-memory and are reset when the Node.js process restarts. For repeated load tests, use the lab-only reset endpoint instead of replacing EC2 instances.
+
+The endpoint requires `METRICS_RESET_TOKEN` and should be reachable only through private app IPs. Do not expose it through a public listener.
+
+Set the same token on every app instance, then run from the load-test EC2:
+
+```bash
+APP_PRIVATE_IPS=172.31.22.192,172.31.34.79 \
+METRICS_RESET_TOKEN='<lab-reset-token>' \
+node tools/reset-metrics.mjs
+```
+
+Do not call the reset endpoint through the ALB: that would reset only one backend instance. The script calls every app instance directly.
+
+After the reset, start the k6 run and collect `/metrics` from both app instances separately.

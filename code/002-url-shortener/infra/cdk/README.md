@@ -132,18 +132,13 @@ make deploy \
 
 The Makefile uses `appSecurityGroupIds`, not `appSecurityGroupId`, because each new app instance must receive both the application security group and the security group allowing access to the current RDS instance.
 
-The same context can be used for cleanup:
+The CDK stack can be removed without passing the database secret ARN. The Makefile deletes the CloudFormation stack directly:
 
 ```bash
-make destroy \
-  VPC_ID=<vpc-id> \
-  SUBNET_IDS=<subnet-1>,<subnet-2> \
-  APP_AMI_ID=<ami-id> \
-  APP_SECURITY_GROUP_IDS=<app-sg-id>,<rds-large-sg-id> \
-  DATABASE_SECRET_ARN=<database-secret-arn> \
-  LOAD_TEST_SECURITY_GROUP_ID=<load-test-sg-id> \
-  PG_POOL_MAX=20
+make destroy
 ```
+
+This deletes only the resources managed by `UrlShortenerAlbAsgStack`; the existing RDS, Secrets Manager secret, VPC, subnets, AMI, and security groups remain.
 
 CDK output `AlbDnsName` becomes the k6 `BASE_URL`:
 
