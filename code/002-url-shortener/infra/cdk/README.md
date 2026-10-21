@@ -35,7 +35,8 @@ The stack imports existing infrastructure through CDK context:
 | `vpcId` | `vpc-...` | VPC where app/load-test/RDS live |
 | `subnetIds` | `subnet-a,subnet-b` | at least two subnets for the internal ALB and ASG |
 | `appAmiId` | `ami-...` | AMI created from the current app EC2 |
-| `appSecurityGroupId` | `sg-...` | app EC2 security group that can reach RDS |
+| `appSecurityGroupIds` | `sg-app,sg-rds` | all security groups that must be attached to each new app EC2 |
+| `databaseSecretArn` | `arn:aws:secretsmanager:...` | ARN of the Secrets Manager secret containing the RDS credentials |
 
 Optional:
 
@@ -47,13 +48,25 @@ Optional:
 | `minCapacity` | `2` | ASG min |
 | `maxCapacity` | `2` | ASG max |
 | `pgPoolMax` | `20` | value written to `.env` |
-| `databaseUrl` | keep AMI value | value written to `.env` |
 | `keyName` | none | EC2 key pair name |
-| `instanceProfileName` | none | existing IAM instance profile |
 | `availabilityZones` | `eu-central-1a,eu-central-1b` | AZs matching the selected subnets |
 | `albAllowedCidr` | `10.0.0.0/8` | CIDR allowed to call ALB when `loadTestSecurityGroupId` is omitted |
 
-For lab speed, `databaseUrl` can be passed as context. For a real production setup, move it to Secrets Manager or SSM Parameter Store instead of putting it into CDK context/state.
+The stack creates a dedicated EC2 IAM role and instance profile. That role can read only the configured Secrets Manager secret. The app receives only `DATABASE_SECRET_ARN`; the password is fetched by the AWS SDK when NestJS starts.
+
+Create the secret separately in AWS Secrets Manager. Its `SecretString` should be JSON, for example:
+
+```json
+{
+  "host": "url-shortener-db-large.xxxxx.eu-central-1.rds.amazonaws.com",
+  "port": 5432,
+  "username": "url_shortener",
+  "password": "stored-in-secrets-manager",
+  "dbname": "url_shortener"
+}
+```
+
+The secret ARN is safe to pass as CDK context; the password is not. Do not put the password into `cdk.context.json`, a Makefile, User Data, CloudFormation parameters, or GitHub workflow arguments.
 
 ## Create App AMI
 
@@ -89,16 +102,47 @@ aws ec2 describe-images \
 
 ## Deploy
 
+To avoid repeating the long context command, use the Makefile. Run it from this directory:
+
 ```bash
-npx cdk deploy \
-  -c vpcId=<vpc-id> \
-  -c subnetIds=<subnet-1>,<subnet-2> \
-  -c appAmiId=<ami-id> \
-  -c appSecurityGroupId=<app-sg-id> \
-  -c loadTestSecurityGroupId=<load-test-sg-id> \
-  -c instanceType=<same-as-current-app> \
-  -c pgPoolMax=20 \
-  -c databaseUrl='<postgres-url>'
+make diff \
+  VPC_ID=<vpc-id> \
+  SUBNET_IDS=<subnet-1>,<subnet-2> \
+  APP_AMI_ID=<ami-id> \
+  APP_SECURITY_GROUP_IDS=<app-sg-id>,<rds-large-sg-id> \
+  DATABASE_SECRET_ARN=<database-secret-arn> \
+  LOAD_TEST_SECURITY_GROUP_ID=<load-test-sg-id> \
+  INSTANCE_TYPE=<same-as-current-app> \
+  PG_POOL_MAX=20
+```
+
+After reviewing the changes, deploy with the same values:
+
+```bash
+make deploy \
+  VPC_ID=<vpc-id> \
+  SUBNET_IDS=<subnet-1>,<subnet-2> \
+  APP_AMI_ID=<ami-id> \
+  APP_SECURITY_GROUP_IDS=<app-sg-id>,<rds-large-sg-id> \
+  DATABASE_SECRET_ARN=<database-secret-arn> \
+  LOAD_TEST_SECURITY_GROUP_ID=<load-test-sg-id> \
+  INSTANCE_TYPE=<same-as-current-app> \
+  PG_POOL_MAX=20
+```
+
+The Makefile uses `appSecurityGroupIds`, not `appSecurityGroupId`, because each new app instance must receive both the application security group and the security group allowing access to the current RDS instance.
+
+The same context can be used for cleanup:
+
+```bash
+make destroy \
+  VPC_ID=<vpc-id> \
+  SUBNET_IDS=<subnet-1>,<subnet-2> \
+  APP_AMI_ID=<ami-id> \
+  APP_SECURITY_GROUP_IDS=<app-sg-id>,<rds-large-sg-id> \
+  DATABASE_SECRET_ARN=<database-secret-arn> \
+  LOAD_TEST_SECURITY_GROUP_ID=<load-test-sg-id> \
+  PG_POOL_MAX=20
 ```
 
 CDK output `AlbDnsName` becomes the k6 `BASE_URL`:
@@ -140,12 +184,3 @@ curl http://<app-1-private-ip>:3000/metrics > metrics-hot-read-2000-2app-app1-po
 curl http://<app-2-private-ip>:3000/metrics > metrics-hot-read-2000-2app-app2-pool20.txt
 ```
 
-## Destroy
-
-```bash
-npx cdk destroy \
-  -c vpcId=<vpc-id> \
-  -c subnetIds=<subnet-1>,<subnet-2> \
-  -c appAmiId=<ami-id> \
-  -c appSecurityGroupId=<app-sg-id>
-```

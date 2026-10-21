@@ -3,13 +3,15 @@ import { CfnOutput, Stack } from 'aws-cdk-lib';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 type RequiredContext = {
   vpcId: string;
   subnetIds: string[];
   appAmiId: string;
-  appSecurityGroupId: string;
+  appSecurityGroupIds: string[];
 };
 
 type OptionalContext = {
@@ -20,11 +22,10 @@ type OptionalContext = {
   maxCapacity: number;
   port: number;
   pgPoolMax: number;
-  databaseUrl?: string;
+  databaseSecretArn: string;
   appDir: string;
   serviceName: string;
   keyName?: string;
-  instanceProfileName?: string;
   availabilityZones: string[];
   albAllowedCidr: string;
 };
@@ -76,7 +77,7 @@ export class UrlShortenerAlbAsgStack extends Stack {
     const appSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(
       this,
       'AppSecurityGroup',
-      required.appSecurityGroupId,
+      required.appSecurityGroupIds[0],
       { mutable: true },
     );
 
@@ -85,6 +86,20 @@ export class UrlShortenerAlbAsgStack extends Stack {
       ec2.Port.tcp(optional.port),
       'Allow ALB to reach URL shortener app',
     );
+
+    const databaseSecret = secretsmanager.Secret.fromSecretCompleteArn(
+      this,
+      'DatabaseSecret',
+      optional.databaseSecretArn,
+    );
+    const appRole = new iam.Role(this, 'AppRole', {
+      assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+      description: 'Runtime role for URL shortener app EC2 instances',
+    });
+    databaseSecret.grantRead(appRole);
+    const appInstanceProfile = new iam.CfnInstanceProfile(this, 'AppInstanceProfile', {
+      roles: [appRole.roleName],
+    });
 
     const alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', {
       vpc,
@@ -119,10 +134,8 @@ export class UrlShortenerAlbAsgStack extends Stack {
         imageId: required.appAmiId,
         instanceType: optional.instanceType,
         keyName: optional.keyName,
-        iamInstanceProfile: optional.instanceProfileName
-          ? { name: optional.instanceProfileName }
-          : undefined,
-        securityGroupIds: [required.appSecurityGroupId],
+        iamInstanceProfile: { name: appInstanceProfile.ref },
+        securityGroupIds: required.appSecurityGroupIds,
         userData: cdk.Fn.base64(this.renderUserData(optional)),
         tagSpecifications: [
           {
@@ -183,17 +196,20 @@ export class UrlShortenerAlbAsgStack extends Stack {
     const vpcId = this.getStringContext('vpcId');
     const subnetIds = this.getListContext('subnetIds');
     const appAmiId = this.getStringContext('appAmiId');
-    const appSecurityGroupId = this.getStringContext('appSecurityGroupId');
+    const appSecurityGroupIds = this.getListContext('appSecurityGroupIds');
 
     if (subnetIds.length < 2) {
       throw new Error('Context subnetIds must contain at least two subnet ids for ALB.');
+    }
+    if (appSecurityGroupIds.length === 0) {
+      throw new Error('Context appSecurityGroupIds must contain at least one security group id.');
     }
 
     return {
       vpcId,
       subnetIds,
       appAmiId,
-      appSecurityGroupId,
+      appSecurityGroupIds,
     };
   }
 
@@ -206,11 +222,10 @@ export class UrlShortenerAlbAsgStack extends Stack {
       maxCapacity: this.getNumberContext('maxCapacity', 2),
       port: this.getNumberContext('port', 3000),
       pgPoolMax: this.getNumberContext('pgPoolMax', 20),
-      databaseUrl: this.tryGetStringContext('databaseUrl'),
+      databaseSecretArn: this.getStringContext('databaseSecretArn'),
       appDir: this.tryGetStringContext('appDir') ?? '/home/ubuntu/002-url-shortener',
       serviceName: this.tryGetStringContext('serviceName') ?? 'url-shortener',
       keyName: this.tryGetStringContext('keyName'),
-      instanceProfileName: this.tryGetStringContext('instanceProfileName'),
       availabilityZones: this.getListContext('availabilityZones', [
         `${Stack.of(this).region}a`,
         `${Stack.of(this).region}b`,
@@ -224,11 +239,9 @@ export class UrlShortenerAlbAsgStack extends Stack {
       `PORT=${context.port}`,
       'BASE_URL=http://localhost:3000',
       `PG_POOL_MAX=${context.pgPoolMax}`,
+      `AWS_REGION=${Stack.of(this).region}`,
+      `DATABASE_SECRET_ARN=${context.databaseSecretArn}`
     ];
-
-    if (context.databaseUrl) {
-      envLines.push(`DATABASE_URL=${context.databaseUrl}`);
-    }
 
     return [
       '#!/bin/bash',

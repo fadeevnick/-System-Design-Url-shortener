@@ -58,14 +58,16 @@ Settings -> Secrets and variables -> Actions -> New repository secret
 | `EC2_SSH_KEY` | full private key content | Private key для SSH |
 | `PORT` | `3000` | Порт приложения |
 | `BASE_URL` | `http://localhost:3000` | Base URL для стенда |
-| `DATABASE_URL` | `postgres://...` | RDS connection string |
+| `DATABASE_SECRET_ARN` | `arn:aws:secretsmanager:...` | ARN of the RDS credentials secret |
 | `PG_POOL_MAX` | `10` | Размер `pg.Pool` |
 
-`DATABASE_URL` для AWS RDS может выглядеть так:
+Для нового CDK deployment пароль не передается через `DATABASE_URL`. Приложение получает только ARN секрета:
 
 ```text
-postgres://url_shortener:PASSWORD@url-shortener-db.xxxxx.eu-central-1.rds.amazonaws.com:5432/url_shortener?uselibpqcompat=true&sslmode=require
+DATABASE_SECRET_ARN=arn:aws:secretsmanager:eu-central-1:ACCOUNT_ID:secret:url-shortener/database-xxxxx
 ```
+
+Сам секрет хранится в AWS Secrets Manager в JSON-формате с `host`, `port`, `username`, `password` и `dbname`. Старый `DATABASE_URL` оставлен в приложении только для локальной разработки и обратной совместимости старого EC2 workflow.
 
 ## EC2 prerequisites
 
@@ -137,6 +139,15 @@ CDK stack создает:
 ```text
 internal ALB -> Auto Scaling Group -> app EC2 instances
 ```
+
+Для текущей RDS `url-shortener-db-large` новые app instances должны получить две Security Group:
+
+```text
+sg-05c5edc7069a2d54b  url-shortener-app-sg
+sg-0d006fddd15aa4193  ec2-rds-2
+```
+
+`ec2-rds-1` относится к старой `url-shortener-db-small` и в новый Launch Template не передается. В CDK это задается через список `appSecurityGroupIds`.
 
 Подробные команды:
 
