@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.env
+*.log
+infra/cdk/cdk.out
+infra/cdk/node_modules
+infra/terraform/.terraform
+infra/terraform/*.tfstate*

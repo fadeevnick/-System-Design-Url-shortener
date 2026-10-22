@@ -14,6 +14,7 @@ baseline -> load test -> bottleneck -> одно изменение -> repeat -> 
 | --- | --- |
 | [bottleneck-lab-roadmap.md](bottleneck-lab-roadmap.md) | Общая карта bottleneck-сценариев и scaling decisions по всем case studies. |
 | [002-url-shortener-labs.md](002-url-shortener-labs.md) | Детальная дорожная карта экспериментов для URL shortener. |
+| [infrastructure-evolution-roadmap.md](infrastructure-evolution-roadmap.md) | Порядок изучения EC2, CodeDeploy, Beanstalk, ECS, Batch, EKS, self-managed Kubernetes и managed services на разных case studies. |
 
 ## Lab Format
 

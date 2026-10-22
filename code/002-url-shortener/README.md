@@ -62,6 +62,10 @@ npm run experiment:k6 -- --summary-export results-hot-read-1000.json
 
 [docs/deployment.md](docs/deployment.md)
 
+Container variants and the ECS/Compose deployment flow:
+
+[docs/container-deployment.md](docs/container-deployment.md)
+
 ## Создать короткую ссылку
 
 ```bash

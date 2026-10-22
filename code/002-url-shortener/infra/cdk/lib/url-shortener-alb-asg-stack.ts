@@ -97,6 +97,18 @@ export class UrlShortenerAlbAsgStack extends Stack {
       description: 'Runtime role for URL shortener app EC2 instances',
     });
     databaseSecret.grantRead(appRole);
+    appRole.addToPolicy(new iam.PolicyStatement({
+      actions: ['ecr:GetAuthorizationToken'],
+      resources: ['*'],
+    }));
+    appRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        'ecr:BatchCheckLayerAvailability',
+        'ecr:GetDownloadUrlForLayer',
+        'ecr:BatchGetImage',
+      ],
+      resources: [`arn:${Stack.of(this).partition}:ecr:${Stack.of(this).region}:${Stack.of(this).account}:repository/url-shortener`],
+    }));
     const appInstanceProfile = new iam.CfnInstanceProfile(this, 'AppInstanceProfile', {
       roles: [appRole.roleName],
     });
