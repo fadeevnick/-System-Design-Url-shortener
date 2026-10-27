@@ -1,0 +1,7 @@
+aws_region = "eu-central-1"
+
+name               = "url-shortener-compose"
+ecr_repository_name = "url-shortener"
+
+# Keep the secret outside git. This ARN is not the secret value.
+database_secret_arn = "arn:aws:secretsmanager:eu-central-1:ACCOUNT_ID:secret:url-shortener/database"

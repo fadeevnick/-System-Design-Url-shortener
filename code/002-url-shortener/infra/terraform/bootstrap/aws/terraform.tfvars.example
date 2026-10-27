@@ -1,0 +1,4 @@
+aws_region = "eu-central-1"
+
+# S3 bucket names are globally unique across AWS.
+state_bucket_name = "replace-with-account-specific-url-shortener-tfstate"

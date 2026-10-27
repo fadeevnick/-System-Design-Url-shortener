@@ -1,0 +1,14 @@
+project_id       = "replace-with-gcp-project-id"
+region           = "europe-west1"
+zone             = "europe-west1-b"
+instance_name    = "url-shortener-compose"
+machine_type     = "e2-medium"
+subnetwork       = "replace-with-subnetwork-name-or-self-link"
+assign_public_ip = true
+
+# Set this only when the VM needs a specific service account, for example for
+# Artifact Registry or Secret Manager access.
+# service_account_email = "replace-with-service-account-email"
+
+# The VPC firewall must allow SSH from the Ansible controller and TCP/80 from
+# the load generator or internet, depending on the experiment.

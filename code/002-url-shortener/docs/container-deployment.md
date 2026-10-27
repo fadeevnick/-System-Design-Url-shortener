@@ -51,9 +51,7 @@ aws ecr get-login-password --region eu-central-1 \
     075483720790.dkr.ecr.eu-central-1.amazonaws.com
 
 cd /opt/url-shortener
-docker compose \
-  -f deploy/compose-single-ec2/docker-compose.yml \
-  up --scale url-shortener=2 -d
+docker compose up --scale url-shortener=2 -d
 ```
 
 Nginx exposes only port `3000` on the host and resolves the Compose service
@@ -159,3 +157,35 @@ failure of one app process/task/host
 
 The Compose experiment isolates process-level scaling on one host. The ECS
 experiment adds managed placement, task replacement and service-level scaling.
+
+For a cloud-portable Compose deployment, use the Terraform adapter for the
+chosen VM provider and the shared Ansible playbook:
+
+```text
+Terraform provider adapter -> VM
+Ansible -> Docker -> Compose + Nginx + replicas
+```
+
+See [infra/ansible/README.md](../infra/ansible/README.md).
+
+On AWS, the production lifecycle is split into two Terraform states:
+
+```text
+infra/terraform/compose-ec2/aws/platform
+  ECR, IAM and later imported VPC/RDS/security-group resources
+
+infra/terraform/compose-ec2/aws/application
+  EC2/ASG, ALB or ECS service
+```
+
+The repository currently includes adapters for AWS EC2 and GCP Compute Engine:
+
+```text
+infra/terraform/compose-ec2/aws/platform
+infra/terraform/compose-ec2/aws/application
+infra/terraform/compose-ec2/gcp
+```
+
+Both adapters output the same `ansible_host` and `ansible_user` values. This
+keeps provider-specific VM and network configuration out of the application
+deployment logic.

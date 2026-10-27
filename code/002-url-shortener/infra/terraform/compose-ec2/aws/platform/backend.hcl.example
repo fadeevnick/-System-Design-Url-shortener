@@ -1,0 +1,4 @@
+bucket       = "replace-with-terraform-state-bucket"
+key          = "url-shortener/platform.tfstate"
+region       = "eu-central-1"
+use_lockfile   = true

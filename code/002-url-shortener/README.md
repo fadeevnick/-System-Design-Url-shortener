@@ -66,6 +66,16 @@ Container variants and the ECS/Compose deployment flow:
 
 [docs/container-deployment.md](docs/container-deployment.md)
 
+Portable Terraform + Ansible deployment for the Compose variant:
+
+[infra/ansible/README.md](infra/ansible/README.md)
+
+Terraform backend bootstrap and AWS lifecycle stacks:
+
+- [infra/terraform/bootstrap/aws](infra/terraform/bootstrap/aws)
+- [infra/terraform/compose-ec2/aws/platform](infra/terraform/compose-ec2/aws/platform)
+- [infra/terraform/compose-ec2/aws/application](infra/terraform/compose-ec2/aws/application)
+
 ## Создать короткую ссылку
 
 ```bash

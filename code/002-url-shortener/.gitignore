@@ -4,6 +4,18 @@ dist
 *.log
 infra/terraform/.terraform
 infra/terraform/.terraform.lock.hcl
+infra/terraform/**/.terraform
 infra/terraform/terraform.tfstate
 infra/terraform/terraform.tfstate.backup
 infra/terraform/*.tfvars
+infra/terraform/**/terraform.tfvars
+infra/terraform/**/terraform.tfstate
+infra/terraform/**/terraform.tfstate.backup
+infra/terraform/**/backend.hcl
+infra/terraform/**/*.tfplan
+
+# Local Ansible connection details and runtime variables.
+infra/ansible/inventory/*.ini
+!infra/ansible/inventory/*.ini.example
+infra/ansible/group_vars/*.yml
+!infra/ansible/group_vars/*.yml.example
