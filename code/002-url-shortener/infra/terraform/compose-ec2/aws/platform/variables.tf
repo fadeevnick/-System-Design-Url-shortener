@@ -16,7 +16,14 @@ variable "ecr_repository_name" {
   default     = "url-shortener"
 }
 
-variable "database_secret_arn" {
+variable "m7g_2xlarge_database_secret_arn" {
+  description = "Secrets Manager ARN containing database credentials."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "m7g_xlarge_database_secret_arn" {
   description = "Secrets Manager ARN containing database credentials."
   type        = string
   default     = null
