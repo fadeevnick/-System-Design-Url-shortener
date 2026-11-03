@@ -100,6 +100,7 @@
         src: "{{ compose_source_dir }}/nginx.conf"
         dest: "{{ compose_dir }}/nginx.conf"
         mode: "0644"
+      register: nginx_config_copy
 
     - name: Log in to Amazon ECR using the instance role
       ansible.builtin.shell: |
@@ -139,11 +140,24 @@
       register: compose_pull
       changed_when: "'Downloaded newer image' in compose_pull.stdout or 'Pull complete' in compose_pull.stdout"
 
+    - name: Validate changed Nginx configuration before replacing container
+      ansible.builtin.command:
+        cmd: docker compose run --rm --no-deps nginx nginx -t
+        chdir: "{{ compose_dir }}"
+      changed_when: false
+
     - name: Start the scaled Compose application
       ansible.builtin.command:
         cmd: "docker compose up --scale url-shortener={{ compose_replicas }} -d --remove-orphans"
         chdir: "{{ compose_dir }}"
       register: compose_up
+      changed_when: true
+
+    - name: Recreate Nginx after configuration change
+      ansible.builtin.command:
+        cmd: docker compose up -d --force-recreate nginx
+        chdir: "{{ compose_dir }}"
+      when: nginx_config_copy.changed
       changed_when: true
 
     - name: Wait for the Nginx health endpoint
