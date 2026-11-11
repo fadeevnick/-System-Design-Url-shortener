@@ -25,9 +25,7 @@ resource "aws_instance" "load_test_host" {
   root_block_device {
     delete_on_termination = true
     encrypted             = false
-    iops                  = 100
-    volume_size           = 8
-    volume_type           = "gp2"
+    volume_type           = "gp3"
   }
 
   tags = {

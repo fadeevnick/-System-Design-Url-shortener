@@ -35,27 +35,25 @@ docker push "$IMAGE_URI"
 
 ```text
 infra/ansible/compose-ec2/deploy.yml
-infra/ansible/compose-ec2-alb/deploy-compose.yml
+infra/ansible/compose-ec2-alb/deploy.yml
 ```
 
-The single-host entrypoint currently imports the legacy playbook so the
-reorganization does not change its behavior. The two-host ALB variant has its
-own playbook and six containers per host.
-
-The next cleanup step is extracting shared Docker, registry-login and Compose
-tasks into `infra/ansible/roles/`.
+Both entrypoints use the shared `compose-host` role. Each architecture keeps
+its own inventory and Compose/Nginx files, while Docker, registry-login and
+deployment tasks are implemented once in `infra/ansible/roles/compose-host/`.
 
 ## Legacy AWS application deployment flow
 
 1. Apply `infra/terraform/aws-platform` and obtain its stable outputs.
 2. Apply the selected application stack, such as `infra/terraform/compose-ec2`.
 3. Put the Terraform host output into the architecture inventory.
-4. Copy `group_vars/compose_host.yml.example` to `group_vars/compose_host.yml`.
+4. Copy the relevant stack inventory example to `inventory.ini` and fill in its variables.
 5. Set the image URI and either the AWS secret ARN or a vault-protected
    `database_url` in that file, or provide them as environment variables.
 6. Run the architecture entrypoint:
 
 ```bash
+ANSIBLE_CONFIG=infra/ansible/ansible.cfg \
 ansible-playbook -i infra/ansible/compose-ec2/inventory.ini infra/ansible/compose-ec2/deploy.yml
 ```
 

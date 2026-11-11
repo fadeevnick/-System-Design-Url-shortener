@@ -102,6 +102,71 @@ compute path: EC2 CPU достигал 77–88%, RDS CPU оставался ок
 
 Следующий workload: `cold-read`.
 
+### 3.2. Cold-read результаты
+
+Для cold-read использовались `SEED_URL_COUNT=10000`, `TARGET_P95_MS=300` и
+`MAX_ERROR_RATE=0.01`. `dropped_iterations` не является backend failure
+criterion; однако из-за него фактически достигнутый rate заметно ниже
+запрошенного и именно фактический rate нужно использовать для capacity claim.
+
+Для cold-read итоговый общий rate из блока `TOTAL RESULTS` нельзя напрямую
+использовать как rate workload: он включает время последовательного `setup()`
+с созданием 10000 ссылок. Рабочий throughput нужно считать как
+`iterations / DURATION`.
+
+| Запрошенный rate | Фактический rate | p95 | Ошибки | Dropped | Verdict |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 6000 | ~5002 | 76.96 ms | 0.02% | 18541 | backend SLO PASS |
+| 8000 | ~5998 | 181.53 ms | 0% | 34393 | backend SLO PASS |
+| 9000 | ~6646 | 215.95 ms | 0% | 61423 | backend SLO PASS |
+| 10000 | ~7491 | 166.66 ms | 0% | 69991 | backend SLO PASS |
+| 11000 | ~8134 | 175.30 ms | 0% | 96197 | backend SLO PASS |
+| 12000 | ~8930 | 187.65 ms | 0% | 131560 | backend SLO PASS |
+| 13000 | ~9511 | 221.13 ms | 0.11% | 179232 | backend SLO PASS |
+
+Cold-read backend SLO не нарушен даже в последнем запуске, но ни один запуск
+выше 6000 не доставил на backend весь запрошенный rate. Поэтому cold-read
+capacity ceiling этой архитектуры пока не найден: текущий bottleneck находится
+в load generator / генерации arrival-rate, а не в HTTP SLO приложения.
+
+При запуске на 13000 k6 также сообщил о более чем 100000 уникальных time
+series. В скрипте добавлен стабильный `name` tag для `/shorten` и `/:shortCode`,
+чтобы динамический short code не создавал высокую cardinality метрик.
+
+### 3.3. Результаты после изменения типов EC2
+
+После уменьшения application hosts до `c7i.large` и использования
+load-test host `m7i.large` были выполнены дополнительные прогоны.
+
+Hot-read:
+
+| Запрошенный rate | Фактический rate | p95 | Ошибки | Dropped | Verdict |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 6500 | ~6411 | 94.02 ms | 0% | 15576 | backend SLO PASS |
+| 7000 | ~6502 | 528.04 ms | 0.65% | 87688 | FAILED_SLO |
+
+В hot-read запуске использовался дефолтный `MAX_VUS=1000`; k6 сообщил
+`Insufficient VUs` в обоих тестах. Поэтому границу около 6500–7000 нужно
+подтвердить с достаточным лимитом VUs.
+
+Cold-read:
+
+| Запрошенный rate | Фактический rate | p95 | Ошибки | Dropped | Verdict |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 6000 | ~5893 | 143.57 ms | 0% | 19254 | backend SLO PASS |
+| 7000 | ~6703 | 1.06 s | 11.71% | 53378 | FAILED_SLO |
+
+На cold-read 7000 были массовые timeout-запросы и нарушены оба backend SLO.
+Этот результат выглядит как насыщение после уменьшения application hosts,
+но запуск нужно повторить после синхронизации актуального k6-скрипта:
+он снова сообщил более 100000 уникальных time series, значит динамические
+short codes ещё не сгруппированы стабильным `name` tag на load-test EC2.
+
+Увеличение VUs само по себе не увеличивает RPS. Если k6 не показывает
+`Insufficient VUs`, достаточно оставить умеренный запас, например
+`PRE_ALLOCATED_VUS=1000` и `MAX_VUS=2000`. Слишком большой запас VUs может
+добавить очередь и ухудшить latency при насыщении application hosts.
+
 ## 4. k6 commands
 
 Hot-read:

@@ -30,7 +30,7 @@ resource "aws_ecr_repository" "url_shortener" {
 
 resource "aws_db_instance" "url_shortener" {
   allocated_storage                     = 100
-  apply_immediately                     = null
+  apply_immediately                     = true
   auto_minor_version_upgrade            = true
   availability_zone                     = var.database_availability_zone
   backup_retention_period               = 0

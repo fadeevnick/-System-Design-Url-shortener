@@ -1,0 +1,12 @@
+---
+- name: Deploy URL shortener to Compose hosts behind ALB
+  hosts: compose_hosts
+  become: true
+  serial: 1
+  collections:
+    - community.docker
+  vars:
+    compose_replicas: 6
+    compose_source_dir: "{{ playbook_dir }}/files"
+  roles:
+    - compose-host

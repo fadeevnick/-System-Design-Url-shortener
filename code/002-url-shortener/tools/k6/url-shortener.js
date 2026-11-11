@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check } from 'k6';
+import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.2/index.js';
 
 const baseUrl = __ENV.BASE_URL || 'http://localhost:3000';
 const requestedWorkload = __ENV.WORKLOAD || 'hot-read';
@@ -85,7 +86,12 @@ function createShortUrl(longUrl, phase = 'workload') {
     JSON.stringify({ longUrl }),
     {
       headers: { 'Content-Type': 'application/json' },
-      tags: { endpoint: 'shorten', workload: requestedWorkload, phase },
+      tags: {
+        name: 'POST /shorten',
+        endpoint: 'shorten',
+        workload: requestedWorkload,
+        phase,
+      },
     },
   );
 
@@ -103,7 +109,12 @@ function createShortUrl(longUrl, phase = 'workload') {
 function followRedirect(shortCode) {
   const response = http.get(`${baseUrl}/${shortCode}`, {
     redirects: 0,
-    tags: { endpoint: 'redirect', workload: requestedWorkload, phase: 'workload' },
+    tags: {
+      name: 'GET /:shortCode',
+      endpoint: 'redirect',
+      workload: requestedWorkload,
+      phase: 'workload',
+    },
   });
 
   check(response, {
@@ -121,4 +132,40 @@ function pickShortCode(shortCodes) {
   }
 
   return shortCodes[0];
+}
+
+function durationToSeconds(value) {
+  const match = String(value).trim().match(/^(\d+(?:\.\d+)?)(ms|s|m|h)$/);
+
+  if (!match) {
+    throw new Error(`Unsupported DURATION format: ${value}`);
+  }
+
+  const amount = Number(match[1]);
+  const multipliers = { ms: 0.001, s: 1, m: 60, h: 3600 };
+  return amount * multipliers[match[2]];
+}
+
+export function handleSummary(data) {
+  const workloadIterations = data.metrics.iterations.values.count || 0;
+  const droppedIterations = data.metrics.dropped_iterations?.values.count || 0;
+  const durationSeconds = durationToSeconds(duration);
+  const workloadRate = workloadIterations / durationSeconds;
+  const offeredRate = (workloadIterations + droppedIterations) / durationSeconds;
+  const droppedRate = droppedIterations / (workloadIterations + droppedIterations);
+
+  const workloadSummary = [
+    '',
+    'WORKLOAD SUMMARY',
+    `workload_iterations: ${workloadIterations}`,
+    `workload_rate: ${workloadRate.toFixed(2)} iterations/s`,
+    `offered_rate: ${offeredRate.toFixed(2)} iterations/s`,
+    `dropped_iterations: ${droppedIterations}`,
+    `dropped_rate: ${(droppedRate * 100).toFixed(3)}%`,
+    '',
+  ].join('\n');
+
+  return {
+    stdout: `${textSummary(data, { indent: ' ', enableColors: true })}${workloadSummary}`,
+  };
 }
