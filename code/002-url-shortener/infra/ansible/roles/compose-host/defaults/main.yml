@@ -1,0 +1,7 @@
+---
+compose_dir: /opt/url-shortener
+compose_replicas: 1
+pg_pool_max: 20
+aws_region: eu-central-1
+registry_type: aws_ecr
+compose_source_dir: "{{ playbook_dir }}/files"

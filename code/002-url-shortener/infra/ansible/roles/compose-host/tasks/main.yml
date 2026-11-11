@@ -1,0 +1,145 @@
+---
+- name: Resolve deployment variables from environment or inventory vars
+  ansible.builtin.set_fact:
+    image_uri: "{{ lookup('env', 'IMAGE_URI') or (hostvars[inventory_hostname].image_uri | default('')) }}"
+    base_url: "{{ lookup('env', 'BASE_URL') or (hostvars[inventory_hostname].base_url | default('')) }}"
+    pg_pool_max: "{{ lookup('env', 'PG_POOL_MAX') or (hostvars[inventory_hostname].pg_pool_max | default(pg_pool_max)) }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') or (hostvars[inventory_hostname].aws_region | default(aws_region)) }}"
+    database_secret_arn: "{{ lookup('env', 'DATABASE_SECRET_ARN') or (hostvars[inventory_hostname].database_secret_arn | default('')) }}"
+    database_url: "{{ lookup('env', 'DATABASE_URL') or (hostvars[inventory_hostname].database_url | default('')) }}"
+    registry_type: "{{ lookup('env', 'REGISTRY_TYPE') or (hostvars[inventory_hostname].registry_type | default(registry_type)) }}"
+    registry_server: "{{ lookup('env', 'REGISTRY_SERVER') or (hostvars[inventory_hostname].registry_server | default('')) }}"
+    registry_username: "{{ lookup('env', 'REGISTRY_USERNAME') or (hostvars[inventory_hostname].registry_username | default('')) }}"
+    registry_password: "{{ lookup('env', 'REGISTRY_PASSWORD') or (hostvars[inventory_hostname].registry_password | default('')) }}"
+
+- name: Validate deployment inputs
+  ansible.builtin.assert:
+    that:
+      - image_uri | length > 0
+      - database_secret_arn | length > 0 or database_url | length > 0
+    fail_msg: "Set IMAGE_URI and either DATABASE_SECRET_ARN or DATABASE_URL before running Ansible."
+
+- name: Install Docker repository prerequisites
+  ansible.builtin.apt:
+    name: [ca-certificates, curl, gnupg]
+    state: present
+    update_cache: true
+
+- name: Install Docker repository keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Install Docker repository signing key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Configure Docker repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ ansible_architecture | replace('x86_64', 'amd64') | replace('aarch64', 'arm64') }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    filename: docker
+    state: present
+
+- name: Install Docker Engine and Compose plugin
+  ansible.builtin.apt:
+    name: [docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin, docker-compose-plugin]
+    state: present
+    update_cache: true
+
+- name: Enable Docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Install AWS CLI for ECR authentication
+  ansible.builtin.apt:
+    name: awscli
+    state: present
+    update_cache: true
+  when: registry_type == 'aws_ecr'
+
+- name: Create Compose directory
+  ansible.builtin.file:
+    path: "{{ compose_dir }}"
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: "0755"
+
+- name: Copy Compose file
+  ansible.builtin.copy:
+    src: "{{ compose_source_dir }}/docker-compose.yml"
+    dest: "{{ compose_dir }}/docker-compose.yml"
+    mode: "0644"
+
+- name: Copy Nginx configuration
+  ansible.builtin.copy:
+    src: "{{ compose_source_dir }}/nginx.conf"
+    dest: "{{ compose_dir }}/nginx.conf"
+    mode: "0644"
+  register: nginx_config_copy
+
+- name: Log in to Amazon ECR using the instance role
+  ansible.builtin.shell: |
+    aws ecr get-login-password --region '{{ aws_region }}' \
+      | docker login --username AWS --password-stdin '{{ registry_server }}'
+  when: registry_type == 'aws_ecr'
+  changed_when: true
+  no_log: true
+
+- name: Log in to a generic Docker registry
+  community.docker.docker_login:
+    registry_url: "{{ registry_server }}"
+    username: "{{ registry_username }}"
+    password: "{{ registry_password }}"
+  when:
+    - registry_type == 'generic'
+    - registry_server | length > 0
+    - registry_username | length > 0
+    - registry_password | length > 0
+  no_log: true
+
+- name: Render Compose environment
+  ansible.builtin.copy:
+    dest: "{{ compose_dir }}/.env"
+    mode: "0600"
+    content: |
+      IMAGE_URI={{ image_uri }}
+      BASE_URL={{ base_url }}
+      PG_POOL_MAX={{ pg_pool_max }}
+      AWS_REGION={{ aws_region }}
+      DATABASE_SECRET_ARN={{ database_secret_arn }}
+      DATABASE_URL={{ database_url }}
+
+- name: Pull the pinned application image
+  ansible.builtin.command:
+    cmd: docker compose pull
+    chdir: "{{ compose_dir }}"
+  register: compose_pull
+  changed_when: "'Downloaded newer image' in compose_pull.stdout or 'Pull complete' in compose_pull.stdout"
+
+- name: Start scaled Compose application
+  ansible.builtin.command:
+    cmd: "docker compose up --scale url-shortener={{ compose_replicas }} -d --remove-orphans"
+    chdir: "{{ compose_dir }}"
+  changed_when: true
+
+- name: Recreate Nginx after configuration change
+  ansible.builtin.command:
+    cmd: docker compose restart nginx
+    chdir: "{{ compose_dir }}"
+  when: nginx_config_copy.changed
+  changed_when: true
+
+- name: Wait for the local health endpoint
+  ansible.builtin.uri:
+    url: http://127.0.0.1:3000/health
+    status_code: 200
+  register: health_check
+  until: health_check.status == 200
+  retries: 20
+  delay: 3

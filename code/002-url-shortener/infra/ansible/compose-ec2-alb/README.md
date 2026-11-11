@@ -12,7 +12,7 @@ at the ALB without changing the current single-host baseline.
 ```bash
 cp inventory.example.ini inventory.ini
 # replace both host addresses and the image/secret values
-ansible-playbook -i inventory.ini deploy-compose.yml
+ANSIBLE_CONFIG=../ansible.cfg ansible-playbook -i inventory.ini deploy.yml
 ```
 
 The playbook uses `serial: 1` so only one host is updated at a time. That makes
