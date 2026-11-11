@@ -73,8 +73,10 @@ Portable Terraform + Ansible deployment for the Compose variant:
 Terraform backend bootstrap and AWS lifecycle stacks:
 
 - [infra/terraform/bootstrap/aws](infra/terraform/bootstrap/aws)
-- [infra/terraform/compose-ec2/aws/platform](infra/terraform/compose-ec2/aws/platform)
-- [infra/terraform/compose-ec2/aws/application](infra/terraform/compose-ec2/aws/application)
+- [infra/terraform/aws-platform](infra/terraform/aws-platform)
+- [infra/terraform/load-test-aws](infra/terraform/load-test-aws)
+- [infra/terraform/compose-ec2](infra/terraform/compose-ec2)
+- [infra/terraform/compose-ec2-alb](infra/terraform/compose-ec2-alb)
 
 ## Создать короткую ссылку
 

@@ -1,0 +1,4 @@
+bucket       = "replace-with-terraform-state-bucket"
+key          = "url-shortener/load-test-aws.tfstate"
+region       = "eu-central-1"
+use_lockfile = true

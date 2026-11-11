@@ -3,7 +3,8 @@
 This stack creates the shared Terraform backend:
 
 ```text
-S3 bucket -> stores platform.tfstate, application.tfstate and lockfiles
+S3 bucket -> stores one state per shared platform, test tool and application
+architecture
 ```
 
 The state for this bootstrap stack is local by design because the remote
@@ -47,17 +48,23 @@ cleanup. The state bucket has `prevent_destroy = true`.
 
 ## Configure the other stacks
 
-Use the resulting bucket name in both backend configuration files:
+Use the resulting bucket name in the backend configuration files. The current
+state keys are:
 
 ```hcl
 bucket         = "the-created-state-bucket"
-key            = "url-shortener/platform.tfstate"
 region         = "eu-central-1"
 use_lockfile   = true
-```
 
-The Application stack uses the same bucket and lock table but a different key:
+# shared platform
+key = "url-shortener/aws-platform.tfstate"
 
-```hcl
-key = "url-shortener/application.tfstate"
+# single-host Compose
+key = "url-shortener/compose-ec2.tfstate"
+
+# two-host Compose + ALB
+key = "url-shortener/compose-ec2-alb.tfstate"
+
+# load generator
+key = "url-shortener/load-test-aws.tfstate"
 ```

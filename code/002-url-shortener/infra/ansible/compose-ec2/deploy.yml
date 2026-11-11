@@ -1,0 +1,7 @@
+---
+# Compatibility entrypoint for the single-host Compose architecture.
+# The implementation remains in the existing playbook until the common Docker
+# and Compose tasks are extracted into roles.
+- import_playbook: ../deploy-compose.yml
+  vars:
+    compose_source_dir_override: "{{ playbook_dir }}/../../../deploy/compose-single-ec2"

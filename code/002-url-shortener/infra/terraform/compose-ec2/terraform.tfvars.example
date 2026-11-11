@@ -1,0 +1,19 @@
+aws_region = "eu-central-1"
+name       = "url-shortener-compose"
+
+platform_state_bucket = "url-shortener-compose-ec2-tfstate"
+platform_state_key    = "url-shortener/aws-platform.tfstate"
+platform_state_region = "eu-central-1"
+
+database_secret_arns = [
+  "arn:aws:secretsmanager:eu-central-1:ACCOUNT_ID:secret:url-shortener/database",
+]
+ami_id         = "ami-xxxxxxxxxxxxxxxxx"
+instance_type  = "c7i.2xlarge"
+subnet_id      = "subnet-app"
+key_name       = "url-shortener-key"
+
+security_group_ids = ["sg-compose-host"]
+
+associate_public_ip_address = true
+root_volume_kms_key_id      = "arn:aws:kms:eu-central-1:ACCOUNT_ID:key/KEY_ID"

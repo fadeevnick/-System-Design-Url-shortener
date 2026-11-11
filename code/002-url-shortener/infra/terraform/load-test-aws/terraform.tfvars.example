@@ -1,0 +1,6 @@
+aws_region = "eu-central-1"
+ami_id     = "ami-xxxxxxxxxxxxxxxxx"
+subnet_id  = "subnet-load-test"
+key_name   = "url-shortener-key"
+
+security_group_ids = ["sg-load-test"]

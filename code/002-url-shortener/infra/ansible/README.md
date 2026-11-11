@@ -1,7 +1,7 @@
-# Portable Compose Deployment
+# Ansible deployment layout
 
-Terraform provisions a VM for a specific cloud provider. Ansible configures
-that VM and deploys the same Docker Compose application.
+Terraform provisions the infrastructure for a concrete architecture. Ansible
+configures the hosts and deploys the application runtime.
 
 ```text
 Terraform cloud adapter -> ansible_host output
@@ -31,18 +31,32 @@ docker build -t "$IMAGE_URI" .
 docker push "$IMAGE_URI"
 ```
 
-## AWS application deployment flow
+## Architecture entrypoints
 
-1. Apply `infra/terraform/compose-ec2/aws/platform` and obtain its stable outputs.
-2. Apply `infra/terraform/compose-ec2/aws/application` and obtain `ansible_host`.
-3. Put the Terraform `ansible_host` into `inventory/compose-ec2.ini`.
+```text
+infra/ansible/compose-ec2/deploy.yml
+infra/ansible/compose-ec2-alb/deploy-compose.yml
+```
+
+The single-host entrypoint currently imports the legacy playbook so the
+reorganization does not change its behavior. The two-host ALB variant has its
+own playbook and six containers per host.
+
+The next cleanup step is extracting shared Docker, registry-login and Compose
+tasks into `infra/ansible/roles/`.
+
+## Legacy AWS application deployment flow
+
+1. Apply `infra/terraform/aws-platform` and obtain its stable outputs.
+2. Apply the selected application stack, such as `infra/terraform/compose-ec2`.
+3. Put the Terraform host output into the architecture inventory.
 4. Copy `group_vars/compose_host.yml.example` to `group_vars/compose_host.yml`.
 5. Set the image URI and either the AWS secret ARN or a vault-protected
    `database_url` in that file, or provide them as environment variables.
-6. Run:
+6. Run the architecture entrypoint:
 
 ```bash
-ansible-playbook -i inventory/compose-ec2.ini deploy-compose.yml
+ansible-playbook -i infra/ansible/compose-ec2/inventory.ini infra/ansible/compose-ec2/deploy.yml
 ```
 
 For AWS ECR, the VM must have an instance profile that permits ECR image pull

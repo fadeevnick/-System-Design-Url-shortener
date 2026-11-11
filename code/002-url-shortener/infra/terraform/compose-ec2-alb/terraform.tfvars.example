@@ -1,0 +1,28 @@
+aws_region = "eu-central-1"
+name       = "url-shortener-compose-alb"
+
+platform_state_bucket = "url-shortener-compose-ec2-tfstate"
+platform_state_key    = "url-shortener/aws-platform.tfstate"
+platform_state_region = "eu-central-1"
+
+database_secret_arn = "arn:aws:secretsmanager:eu-central-1:ACCOUNT_ID:secret:url-shortener/database"
+
+vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
+
+alb_subnet_ids = [
+  "subnet-public-a",
+  "subnet-public-b",
+]
+
+compose_subnet_ids = [
+  "subnet-app-a",
+  "subnet-app-b",
+]
+
+ami_id        = "ami-xxxxxxxxxxxxxxxxx"
+instance_type = "c7i.xlarge"
+key_name      = "url-shortener-key"
+
+associate_public_ip_address = true
+ssh_ingress_cidr_blocks     = ["203.0.113.10/32"]
+alb_ingress_cidr_blocks     = ["198.51.100.0/24"]

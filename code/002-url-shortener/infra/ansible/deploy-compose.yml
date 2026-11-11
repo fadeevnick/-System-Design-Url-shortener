@@ -5,9 +5,8 @@
   collections:
     - community.docker
   vars:
-    compose_source_dir: "{{ playbook_dir }}/../../deploy/compose-single-ec2"
+    compose_source_dir: "{{ compose_source_dir_override | default(playbook_dir ~ '/../../deploy/compose-single-ec2', true) }}"
     compose_dir: /opt/url-shortener
-    compose_replicas: 12
 
   pre_tasks:
     - name: Resolve deployment variables from environment or inventory vars

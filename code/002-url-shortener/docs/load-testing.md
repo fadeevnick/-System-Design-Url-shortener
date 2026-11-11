@@ -15,13 +15,13 @@ Redis, PgBouncer, read replicas, larger RDS и horizontal scaling добавля
 Текущая фаза `002-url-shortener`:
 
 ```text
-hot-read DB-only scale-up
+hot-read capacity comparison for 2 EC2 + ALB + Compose
 
-Сначала продолжаем текущий сценарий hot-read без Redis/cache.
-Цель - попробовать довести PostgreSQL-only read path примерно до 5-6k RPS
-и фиксировать каждый новый bottleneck по метрикам.
+Сначала находим предельную нагрузку текущей архитектуры без Redis/cache.
+После завершения hot-read переходим к cold-read, затем mixed и write-burst.
 
-К cold-read, mixed, write-burst и large-dataset сценариям переходим после этой фазы.
+Переход к следующей архитектуре делаем только после прохождения всех
+workloads на текущей.
 ```
 
 ## 1. Основной цикл
@@ -42,10 +42,17 @@ hot-read DB-only scale-up
 ```text
 p95 < 300ms
 errorRate < 1%
-dropped_iterations ~= 0
 ```
 
-Если SLO ломается, не идем выше по RPS. Сначала объясняем почему.
+`dropped_iterations` записываем отдельно. Это характеристика способности
+load generator поддерживать arrival rate, а не HTTP-результат backend.
+Если load-test EC2, сеть или VU limit становятся bottleneck, результат
+помечаем `INVALID_LOAD_GENERATOR`. Если backend HTTP SLO проходит, результат
+можно использовать для оценки архитектуры, но обязательно указываем actual
+RPS и количество dropped iterations.
+
+Если `http_req_duration` или `http_req_failed` ломаются, нагрузку считаем
+непройденной и выше по rate не идём, пока не объясним bottleneck.
 
 ## 2. Workloads
 
@@ -66,63 +73,36 @@ WORKLOAD=hot-read
 DURATION=10m
 ```
 
-## 3. Базовая матрица
+## 2.1. Текущий hot-read result
 
-Перед серией зафиксируй окружение:
-
-```text
-git commit
-app EC2 instance type
-load-test EC2 instance type
-RDS instance class
-PG_POOL_MAX
-DATABASE_URL target
-BASE_URL private/public
-```
-
-Default для backend capacity:
+Архитектура:
 
 ```text
-BASE_URL=http://<app-private-ip>:3000
-RDS=db.t3.small
-PG_POOL_MAX=100
-load generator=отдельная EC2 в той же VPC/AZ
+2 EC2 + ALB + Compose
+6 url-shortener containers на каждом EC2
 ```
 
-Для каждого workload идем ступенями:
+Зафиксированные результаты:
 
-```text
-RATE=500
-RATE=1000
-RATE=1500
-RATE=2000
-RATE=2500, только если 2000 проходит
-```
+| Target rate | Actual RPS | p95 | HTTP errors | Dropped | Verdict |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 6000 | ~5997 | 88.7 ms | 0% | 0 | PASS |
+| 10000 | ~9987 | 250.18 ms | 0% | 3496 | PASS backend / load-generator warning |
+| 11000 | ~10979 | 333.07 ms | 0% | 5635 | FAILED_SLO |
 
-Рекомендуемая длительность:
+На 10000 RPS backend HTTP SLO проходит. `dropped_iterations` фиксируется как
+отдельный сигнал load generator и не меняет этот verdict. На 11000 RPS
+нарушен `p95 < 300 ms`, поэтому этот rate не принимается.
 
-```text
-capacity steps: 3m
-target confirmation: 5m
-campaign-spike: 10m
-```
+Наблюдаемый bottleneck на 10000–11000 RPS находится ближе к application
+compute path: EC2 CPU достигал 77–88%, RDS CPU оставался около 39–47%.
+Перед окончательной фиксацией capacity нужно проверить `ConsumedLCUs`,
+`RequestCountPerTarget`, CPU/RAM/network load-test EC2 и распределение
+трафика между двумя targets.
+
+Следующий workload: `cold-read`.
 
 ## 4. k6 commands
-
-Sanity:
-
-```bash
-BASE_URL=http://<app-private-ip>:3000 \
-WORKLOAD=hot-read \
-RATE=100 \
-DURATION=1m \
-TARGET_P95_MS=300 \
-MAX_ERROR_RATE=0.01 \
-MAX_DROPPED_ITERATIONS=1 \
-PRE_ALLOCATED_VUS=50 \
-MAX_VUS=200 \
-k6 run --summary-export results-hot-read-100.json tools/k6/url-shortener.js
-```
 
 Hot-read:
 
@@ -145,6 +125,7 @@ Cold-read:
 BASE_URL=http://<app-private-ip>:3000 \
 WORKLOAD=cold-read \
 SEED_URL_COUNT=1000 \
+SETUP_TIMEOUT=10m \
 RATE=1000 \
 DURATION=3m \
 TARGET_P95_MS=300 \
@@ -317,68 +298,3 @@ UNKNOWN_NEEDS_MORE_METRICS
 | `dbReadsPerRequest ~= 1`, hot-read ломает SLO, RDS/query/pool связаны с redirects | repeated DB reads | Redis cache-aside как следующий experiment |
 | mixed хуже hot-read | writes мешают reads | оптимизировать transaction/pool, потом рассматривать async patterns |
 | write-burst ломается, read нормальный | write path bottleneck | оптимизировать create path, batch/queue/id generation strategy позже |
-
-## 8. Decision rules
-
-Изменение делаем только после доказанного bottleneck.
-
-RDS connection limit:
-
-```text
-1. подобрать PG_POOL_MAX;
-2. взять больший RDS instance;
-3. рассмотреть PgBouncer, если много app instances или connection churn.
-```
-
-App EC2 CPU:
-
-```text
-1. проверить, что load generator не bottleneck;
-2. взять больший app EC2;
-3. добавить второй app instance + Load Balancer;
-4. оптимизировать hot path.
-```
-
-Repeated DB reads на hot-read:
-
-```text
-1. доказать dbReadsPerRequest ~= 1;
-2. доказать, что pool/query/RDS pressure связан с redirects;
-3. в текущей DB-only фазе сначала проверить релевантные DB-only изменения;
-4. Redis cache-aside оставить отдельным experiment после DB-only исследований;
-5. сравнить до/после по p95, p99, dbReadDelta, RDS metrics.
-```
-
-RDS CPU/IO на cold-read:
-
-```text
-1. проверить index/query plan;
-2. увеличить RDS class;
-3. рассмотреть read replica;
-4. cache использовать только если workload имеет повторяемость.
-```
-
-После любого изменения повторяем тот же workload/rate, где система ломалась. Если bottleneck снят, повышаем нагрузку.
-
-## 9. Current baseline interpretation
-
-Уже наблюдали:
-
-```text
-db.t3.small + PG_POOL_MAX=100
-concurrency=200
-p95 ~= 160ms
-errorRate = 0
-poolWaitAvg низкий
-dbQueryAvg ~= 31ms
-dbReadsPerRequest = 1
-```
-
-Это означает:
-
-```text
-connection errors сняты larger RDS;
-увеличение pool сняло часть pool queue;
-baseline все еще платит PostgreSQL read на каждый redirect;
-следующие тесты должны найти, где именно read path станет bottleneck при fixed RPS.
-```

@@ -10,14 +10,26 @@ const targetP95Ms = Number(__ENV.TARGET_P95_MS || 300);
 const maxErrorRate = Number(__ENV.MAX_ERROR_RATE || 0.01);
 const preAllocatedVus = Number(__ENV.PRE_ALLOCATED_VUS || 200);
 const maxVus = Number(__ENV.MAX_VUS || 1000);
+const setupTimeout = __ENV.SETUP_TIMEOUT || '10m';
 const seedUrlCount = Number(__ENV.SEED_URL_COUNT || 1000);
 const writePercent = Number(__ENV.WRITE_PERCENT || 1);
 const maxDroppedIterations = Number(__ENV.MAX_DROPPED_ITERATIONS || 1);
+const enforceDroppedIterations = (__ENV.ENFORCE_DROPPED_ITERATIONS || 'false') === 'true';
 
 const sampleLongUrl =
   'https://shop.example.com/orders/923847293847?token=abc&utm_source=sms&utm_campaign=pickup_ready';
 
+const thresholds = {
+  'http_req_failed{phase:workload}': [`rate<${maxErrorRate}`],
+  'http_req_duration{phase:workload}': [`p(95)<${targetP95Ms}`],
+};
+
+if (enforceDroppedIterations) {
+  thresholds.dropped_iterations = [`count<${maxDroppedIterations}`];
+}
+
 export const options = {
+  setupTimeout,
   scenarios: {
     url_shortener: {
       executor: 'constant-arrival-rate',
@@ -28,11 +40,7 @@ export const options = {
       maxVUs: maxVus,
     },
   },
-  thresholds: {
-    http_req_failed: [`rate<${maxErrorRate}`],
-    http_req_duration: [`p(95)<${targetP95Ms}`],
-    dropped_iterations: [`count<${maxDroppedIterations}`],
-  },
+  thresholds,
 };
 
 export function setup() {
@@ -50,7 +58,7 @@ export function setup() {
   const shortCodes = [];
 
   for (let index = 0; index < seedCount; index += 1) {
-    shortCodes.push(createShortUrl(`${sampleLongUrl}&seed=${Date.now()}-${index}`));
+    shortCodes.push(createShortUrl(`${sampleLongUrl}&seed=${Date.now()}-${index}`, 'setup'));
   }
 
   return { shortCodes };
@@ -71,13 +79,13 @@ export default function (data) {
   followRedirect(shortCode);
 }
 
-function createShortUrl(longUrl) {
+function createShortUrl(longUrl, phase = 'workload') {
   const response = http.post(
     `${baseUrl}/shorten`,
     JSON.stringify({ longUrl }),
     {
       headers: { 'Content-Type': 'application/json' },
-      tags: { endpoint: 'shorten', workload: requestedWorkload },
+      tags: { endpoint: 'shorten', workload: requestedWorkload, phase },
     },
   );
 
@@ -95,7 +103,7 @@ function createShortUrl(longUrl) {
 function followRedirect(shortCode) {
   const response = http.get(`${baseUrl}/${shortCode}`, {
     redirects: 0,
-    tags: { endpoint: 'redirect', workload: requestedWorkload },
+    tags: { endpoint: 'redirect', workload: requestedWorkload, phase: 'workload' },
   });
 
   check(response, {

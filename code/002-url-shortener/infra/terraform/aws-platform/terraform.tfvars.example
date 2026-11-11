@@ -1,0 +1,10 @@
+aws_region = "eu-central-1"
+
+ecr_repository_name = "url-shortener"
+
+database_identifier         = "url-shortener-db-m7g-xlarge"
+database_instance_class     = "db.m7g.xlarge"
+database_availability_zone  = "eu-central-1b"
+database_subnet_group_name  = "url-shortener-public-db-subnet-group"
+database_security_group_ids = ["sg-database-example"]
+database_kms_key_id         = "arn:aws:kms:eu-central-1:ACCOUNT_ID:key/KEY_ID"
