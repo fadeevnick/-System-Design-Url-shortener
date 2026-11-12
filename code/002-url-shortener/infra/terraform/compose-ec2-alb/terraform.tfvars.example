@@ -20,7 +20,7 @@ compose_subnet_ids = [
 ]
 
 ami_id        = "ami-xxxxxxxxxxxxxxxxx"
-instance_type = "c7i.xlarge"
+instance_type = "c7i.large"
 key_name      = "url-shortener-key"
 
 associate_public_ip_address = true

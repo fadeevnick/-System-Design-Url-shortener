@@ -24,9 +24,7 @@ API будет доступен на `http://localhost:3000`.
 Этот пример развивается по шагам: сначала простая архитектура, потом каждое усложнение добавляется только после сценария, который показывает проблему.
 
 - [docs/evolution.md](docs/evolution.md) — порядок усложнения архитектуры.
-- [docs/experiments.md](docs/experiments.md) — как запускать baseline experiments.
 - [docs/load-testing.md](docs/load-testing.md) — bottleneck-driven protocol для k6 и отдельной load-test EC2.
-- [../../architecture_implement/labs/bottleneck-lab-roadmap.md](../../architecture_implement/labs/bottleneck-lab-roadmap.md) — план labs для разных scaling решений.
 - [docs/metrics.md](docs/metrics.md) — что означает каждая метрика из `/metrics`.
 - [docs/production-readiness-audit.md](docs/production-readiness-audit.md) — какие части проекта учебные и чем их заменяют в production.
 
@@ -50,23 +48,11 @@ MAX_DROPPED_ITERATIONS=1 \
 npm run experiment:k6 -- --summary-export results-hot-read-1000.json
 ```
 
-## PostgreSQL в GCP
+## Deploy to AWS EC2
 
-Для деплоя PostgreSQL в GCP через Terraform смотри:
-
-[infra/terraform/README.md](infra/terraform/README.md)
-
-## Deploy to EC2
-
-Для ручного деплоя через GitHub Actions смотри:
-
-[docs/deployment.md](docs/deployment.md)
-
-Container variants and the ECS/Compose deployment flow:
-
-[docs/container-deployment.md](docs/container-deployment.md)
-
-Portable Terraform + Ansible deployment for the Compose variant:
+Terraform создаёт backend, общую AWS platform-инфраструктуру, application
+stack и отдельный load-test host. Ansible устанавливает Docker и запускает
+Compose deployment на EC2:
 
 [infra/ansible/README.md](infra/ansible/README.md)
 

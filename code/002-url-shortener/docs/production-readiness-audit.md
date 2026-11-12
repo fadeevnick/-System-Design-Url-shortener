@@ -496,14 +496,14 @@ Production-замена:
 Сейчас:
 
 ```text
-GitHub Actions -> scp tar.gz -> EC2 -> systemd restart
+Terraform -> EC2/ALB/RDS/ECR -> Ansible -> Docker Compose -> EC2
 ```
 
 Почему это хорошо для учебного проекта:
 
 - прозрачно;
 - видно, что именно деплоится;
-- хорошо для одного instance.
+- хорошо для учебной лаборатории и ручного сравнения архитектур.
 
 Ограничения:
 
@@ -535,9 +535,9 @@ Production-замена:
 Сейчас:
 
 ```text
-в repo есть Terraform под GCP Cloud SQL
-фактический стенд сейчас AWS EC2/RDS
-часть AWS infra создается вручную
+в repo есть Terraform под AWS backend, shared platform и application stacks
+фактический стенд сейчас AWS EC2/ALB/RDS/ECR
+Ansible конфигурирует Docker Compose на application hosts
 ```
 
 Почему это нормально для учебного этапа:

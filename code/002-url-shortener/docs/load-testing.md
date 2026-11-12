@@ -10,12 +10,11 @@ load-test EC2 -> app EC2 -> RDS PostgreSQL
 
 Redis, PgBouncer, read replicas, larger RDS и horizontal scaling добавляем только после experiment, который показывает конкретную проблему.
 
-Дорожная карта bottleneck-сценариев и связь с другими case studies описаны в [architecture_implement/labs/bottleneck-lab-roadmap.md](../../../architecture_implement/labs/bottleneck-lab-roadmap.md).
-
-Текущая фаза `002-url-shortener`:
+Текущее состояние `002-url-shortener`:
 
 ```text
-hot-read capacity comparison for 2 EC2 + ALB + Compose
+hot-read и cold-read завершены для 2 EC2 + ALB + Compose
+следующий workload: mixed
 
 Сначала находим предельную нагрузку текущей архитектуры без Redis/cache.
 После завершения hot-read переходим к cold-read, затем mixed и write-burst.
@@ -73,94 +72,46 @@ WORKLOAD=hot-read
 DURATION=10m
 ```
 
-## 2.1. Текущий hot-read result
+## 2.1. Текущие результаты
 
-Архитектура:
+Текущая конфигурация эксперимента:
 
 ```text
-2 EC2 + ALB + Compose
+2 × c7i.large + ALB + Compose
 6 url-shortener containers на каждом EC2
+load-test host: m7i.large
 ```
 
-Зафиксированные результаты:
+`dropped_iterations` фиксируется отдельно и не является backend failure
+criterion. Для cold-read итоговый общий rate нельзя напрямую использовать,
+потому что он включает последовательный `setup()` с созданием 10000 ссылок.
 
-| Target rate | Actual RPS | p95 | HTTP errors | Dropped | Verdict |
-| ---: | ---: | ---: | ---: | ---: | --- |
-| 6000 | ~5997 | 88.7 ms | 0% | 0 | PASS |
-| 10000 | ~9987 | 250.18 ms | 0% | 3496 | PASS backend / load-generator warning |
-| 11000 | ~10979 | 333.07 ms | 0% | 5635 | FAILED_SLO |
-
-На 10000 RPS backend HTTP SLO проходит. `dropped_iterations` фиксируется как
-отдельный сигнал load generator и не меняет этот verdict. На 11000 RPS
-нарушен `p95 < 300 ms`, поэтому этот rate не принимается.
-
-Наблюдаемый bottleneck на 10000–11000 RPS находится ближе к application
-compute path: EC2 CPU достигал 77–88%, RDS CPU оставался около 39–47%.
-Перед окончательной фиксацией capacity нужно проверить `ConsumedLCUs`,
-`RequestCountPerTarget`, CPU/RAM/network load-test EC2 и распределение
-трафика между двумя targets.
-
-Следующий workload: `cold-read`.
-
-### 3.2. Cold-read результаты
-
-Для cold-read использовались `SEED_URL_COUNT=10000`, `TARGET_P95_MS=300` и
-`MAX_ERROR_RATE=0.01`. `dropped_iterations` не является backend failure
-criterion; однако из-за него фактически достигнутый rate заметно ниже
-запрошенного и именно фактический rate нужно использовать для capacity claim.
-
-Для cold-read итоговый общий rate из блока `TOTAL RESULTS` нельзя напрямую
-использовать как rate workload: он включает время последовательного `setup()`
-с созданием 10000 ссылок. Рабочий throughput нужно считать как
-`iterations / DURATION`.
+### Hot-read
 
 | Запрошенный rate | Фактический rate | p95 | Ошибки | Dropped | Verdict |
 | ---: | ---: | ---: | ---: | ---: | --- |
-| 6000 | ~5002 | 76.96 ms | 0.02% | 18541 | backend SLO PASS |
-| 8000 | ~5998 | 181.53 ms | 0% | 34393 | backend SLO PASS |
-| 9000 | ~6646 | 215.95 ms | 0% | 61423 | backend SLO PASS |
-| 10000 | ~7491 | 166.66 ms | 0% | 69991 | backend SLO PASS |
-| 11000 | ~8134 | 175.30 ms | 0% | 96197 | backend SLO PASS |
-| 12000 | ~8930 | 187.65 ms | 0% | 131560 | backend SLO PASS |
-| 13000 | ~9511 | 221.13 ms | 0.11% | 179232 | backend SLO PASS |
-
-Cold-read backend SLO не нарушен даже в последнем запуске, но ни один запуск
-выше 6000 не доставил на backend весь запрошенный rate. Поэтому cold-read
-capacity ceiling этой архитектуры пока не найден: текущий bottleneck находится
-в load generator / генерации arrival-rate, а не в HTTP SLO приложения.
-
-При запуске на 13000 k6 также сообщил о более чем 100000 уникальных time
-series. В скрипте добавлен стабильный `name` tag для `/shorten` и `/:shortCode`,
-чтобы динамический short code не создавал высокую cardinality метрик.
-
-### 3.3. Результаты после изменения типов EC2
-
-После уменьшения application hosts до `c7i.large` и использования
-load-test host `m7i.large` были выполнены дополнительные прогоны.
-
-Hot-read:
-
-| Запрошенный rate | Фактический rate | p95 | Ошибки | Dropped | Verdict |
-| ---: | ---: | ---: | ---: | ---: | --- |
-| 6500 | ~6411 | 94.02 ms | 0% | 15576 | backend SLO PASS |
+| 6500 | ~6411 | 94.02 ms | 0% | 15576 | PASS |
 | 7000 | ~6502 | 528.04 ms | 0.65% | 87688 | FAILED_SLO |
 
 В hot-read запуске использовался дефолтный `MAX_VUS=1000`; k6 сообщил
 `Insufficient VUs` в обоих тестах. Поэтому границу около 6500–7000 нужно
 подтвердить с достаточным лимитом VUs.
 
-Cold-read:
+### Cold-read
 
-| Запрошенный rate | Фактический rate | p95 | Ошибки | Dropped | Verdict |
+| Target rate | Workload RPS | p95 | HTTP errors | Dropped | Verdict |
 | ---: | ---: | ---: | ---: | ---: | --- |
-| 6000 | ~5893 | 143.57 ms | 0% | 19254 | backend SLO PASS |
-| 7000 | ~6703 | 1.06 s | 11.71% | 53378 | FAILED_SLO |
+| 6000 | ~5893* | 143.57 ms | 0% | 19254 | PASS |
+| 7000 | ~6703* | 1.06 s | 11.71% | 53378 | FAILED_SLO |
 
-На cold-read 7000 были массовые timeout-запросы и нарушены оба backend SLO.
-Этот результат выглядит как насыщение после уменьшения application hosts,
-но запуск нужно повторить после синхронизации актуального k6-скрипта:
-он снова сообщил более 100000 уникальных time series, значит динамические
-short codes ещё не сгруппированы стабильным `name` tag на load-test EC2.
+`*` Workload RPS рассчитан по завершившимся итерациям за 180 секунд; общий
+rate k6 включает seed-запросы из `setup()`. Поэтому cold-read 6000 считается
+пройденным: p95 и error rate находятся в пределах SLO. Cold-read 7000 не
+проходит SLO из-за p95 `1.06 s` и error rate `11.71%`.
+
+В cold-read 7000 были массовые timeout-запросы. k6 также сообщил о высокой
+cardinality time series; load-test EC2 нужно синхронизировать с актуальной
+версией скрипта со стабильным `name` tag перед следующей архитектурой.
 
 Увеличение VUs само по себе не увеличивает RPS. Если k6 не показывает
 `Insufficient VUs`, достаточно оставить умеренный запас, например

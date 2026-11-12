@@ -9,7 +9,7 @@
 Текущее состояние:
 
 - NestJS API;
-- один PostgreSQL, локально или Cloud SQL;
+- один PostgreSQL, локально или Amazon RDS;
 - `BIGSERIAL` генерирует числовой `id`;
 - `base62(id)` становится `shortCode`;
 - `GET /:shortCode` каждый раз читает PostgreSQL.
@@ -60,7 +60,7 @@ API -> PostgreSQL SELECT long_url WHERE short_code = ?
 
 Сначала рассматриваем простые варианты:
 
-- увеличить Cloud SQL tier;
+- увеличить RDS tier;
 - добавить read replica;
 - убедиться, что индекс по `short_code` используется.
 
@@ -72,7 +72,7 @@ cache miss -> PostgreSQL SELECT -> Redis SET
 cache hit -> redirect без PostgreSQL
 ```
 
-Если baseline выдерживает production-like нагрузку с нормальным `p95` и приемлемой стоимостью Cloud SQL, Redis пока не добавляем.
+Если baseline выдерживает production-like нагрузку с нормальным `p95` и приемлемой стоимостью RDS, Redis пока не добавляем.
 
 ## 4. Click analytics scenario -> async events
 

@@ -53,9 +53,9 @@ variable "ami_id" {
 }
 
 variable "instance_type" {
-  description = "Two c7i.xlarge hosts preserve approximately the current total capacity."
+  description = "Two c7i.large hosts used by the current experiment."
   type        = string
-  default     = "c7i.xlarge"
+  default     = "c7i.large"
 }
 
 variable "key_name" {

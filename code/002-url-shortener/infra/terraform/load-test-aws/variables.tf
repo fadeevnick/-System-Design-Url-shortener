@@ -16,7 +16,7 @@ variable "ami_id" {
 variable "instance_type" {
   description = "Keep this fixed across architecture comparisons."
   type        = string
-  default     = "c5.xlarge"
+  default     = "m7i.large"
 }
 
 variable "subnet_id" {

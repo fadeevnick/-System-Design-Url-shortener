@@ -13,13 +13,13 @@ variable "ecr_repository_name" {
 variable "database_identifier" {
   description = "Existing or new RDS instance identifier."
   type        = string
-  default     = "url-shortener-db-m7g-xlarge"
+  default     = "url-shortener-db-m7g-large"
 }
 
 variable "database_instance_class" {
   description = "RDS class kept constant while comparing compute architectures."
   type        = string
-  default     = "db.m7g.xlarge"
+  default     = "db.m7g.large"
 }
 
 variable "database_availability_zone" {

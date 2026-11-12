@@ -2,8 +2,8 @@ aws_region = "eu-central-1"
 
 ecr_repository_name = "url-shortener"
 
-database_identifier         = "url-shortener-db-m7g-xlarge"
-database_instance_class     = "db.m7g.xlarge"
+database_identifier         = "url-shortener-db-m7g-large"
+database_instance_class     = "db.m7g.large"
 database_availability_zone  = "eu-central-1b"
 database_subnet_group_name  = "url-shortener-public-db-subnet-group"
 database_security_group_ids = ["sg-database-example"]

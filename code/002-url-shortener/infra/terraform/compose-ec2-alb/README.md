@@ -2,7 +2,7 @@
 
 This stack owns only the application-serving architecture:
 
-- two `c7i.xlarge` Compose hosts;
+- two `c7i.large` Compose hosts;
 - six application containers per host;
 - an internet-facing ALB;
 - ALB and host security groups;

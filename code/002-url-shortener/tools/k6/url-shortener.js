@@ -1,8 +1,5 @@
 import http from 'k6/http';
 import { check } from 'k6';
-import { Counter } from 'k6/metrics';
-
-const workloadRateMetric = new Counter('workload_rate');
 
 const baseUrl = __ENV.BASE_URL || 'http://localhost:3000';
 const requestedWorkload = __ENV.WORKLOAD || 'hot-read';
@@ -67,8 +64,6 @@ export function setup() {
 }
 
 export default function (data) {
-  workloadRateMetric.add(1);
-
   if (workload === 'write-burst') {
     createShortUrl(`${sampleLongUrl}&request=${Date.now()}-${__ITER}`);
     return;

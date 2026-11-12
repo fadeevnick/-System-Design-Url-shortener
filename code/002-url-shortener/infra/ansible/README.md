@@ -42,7 +42,7 @@ Both entrypoints use the shared `compose-host` role. Each architecture keeps
 its own inventory and Compose/Nginx files, while Docker, registry-login and
 deployment tasks are implemented once in `infra/ansible/roles/compose-host/`.
 
-## Legacy AWS application deployment flow
+## AWS application deployment flow
 
 1. Apply `infra/terraform/aws-platform` and obtain its stable outputs.
 2. Apply the selected application stack, such as `infra/terraform/compose-ec2`.
