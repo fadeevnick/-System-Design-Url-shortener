@@ -15,7 +15,7 @@ API -> PostgreSQL
 Сейчас:
 
 ```text
-src/observability/metrics.service.ts
+implementations/nestjs/src/observability/metrics.service.ts
 ```
 
 Приложение хранит counters/gauges/timers в памяти процесса и отдает их через `/metrics`.
@@ -138,7 +138,7 @@ k6 с `constant-arrival-rate` лучше отвечает на вопрос:
 Сейчас:
 
 ```text
-src/database/database.module.ts
+implementations/nestjs/src/database/database.module.ts
 ```
 
 Приложение при старте выполняет:

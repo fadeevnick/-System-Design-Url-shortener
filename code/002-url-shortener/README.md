@@ -11,8 +11,8 @@
 ## Запуск
 
 ```bash
+cd implementations/nestjs
 cp .env.example .env
-docker compose up -d
 npm install
 npm run start:dev
 ```
@@ -27,6 +27,14 @@ API будет доступен на `http://localhost:3000`.
 - [docs/load-testing.md](docs/load-testing.md) — bottleneck-driven protocol для k6 и отдельной load-test EC2.
 - [docs/metrics.md](docs/metrics.md) — что означает каждая метрика из `/metrics`.
 - [docs/production-readiness-audit.md](docs/production-readiness-audit.md) — какие части проекта учебные и чем их заменяют в production.
+
+## Go implementation
+
+Альтернативная реализация того же API на Go находится в
+[implementations/go](implementations/go). Она пока не подключена к Terraform
+или Ansible: сначала проверяем API/DB-совместимость и локальные тесты, затем
+запускаем её на той же `2 × c7i.large + ALB + Compose` инфраструктуре для
+честного сравнения с NestJS.
 
 Полезные endpoints:
 
@@ -45,7 +53,7 @@ DURATION=3m \
 TARGET_P95_MS=300 \
 MAX_ERROR_RATE=0.01 \
 MAX_DROPPED_ITERATIONS=1 \
-npm run experiment:k6 -- --summary-export results-hot-read-1000.json
+k6 run tools/k6/url-shortener.js
 ```
 
 ## Deploy to AWS EC2

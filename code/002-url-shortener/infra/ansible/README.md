@@ -27,7 +27,18 @@ terraform output -raw ecr_repository_url
 ```
 
 ```bash
-docker build -t "$IMAGE_URI" .
+docker build -t "$IMAGE_URI" \
+  -f implementations/nestjs/Dockerfile \
+  implementations/nestjs
+docker push "$IMAGE_URI"
+```
+
+Для Go-реализации используются те же deployment playbooks, но другой image:
+
+```bash
+docker build -t "$IMAGE_URI" \
+  -f implementations/go/Dockerfile \
+  implementations/go
 docker push "$IMAGE_URI"
 ```
 

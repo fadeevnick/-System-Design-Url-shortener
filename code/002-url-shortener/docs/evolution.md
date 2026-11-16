@@ -31,7 +31,7 @@
 
 - `GET /health`;
 - `GET /metrics`;
-- `npm run experiment:k6`.
+- `k6 run tools/k6/url-shortener.js`.
 
 Реальное решение принимаем после bottleneck-driven k6 тестов с отдельной load-test EC2:
 
@@ -43,7 +43,7 @@ DURATION=3m \
 TARGET_P95_MS=300 \
 MAX_ERROR_RATE=0.01 \
 MAX_DROPPED_ITERATIONS=1 \
-npm run experiment:k6 -- --summary-export results-hot-read-1000.json
+k6 run tools/k6/url-shortener.js
 ```
 
 ## 3. Read-heavy scenario -> Redis cache-aside

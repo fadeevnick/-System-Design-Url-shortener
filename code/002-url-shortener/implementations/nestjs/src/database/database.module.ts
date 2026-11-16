@@ -28,11 +28,6 @@ export const PG_POOL = Symbol('PG_POOL');
           );
         `);
 
-        await pool.query(`
-          CREATE INDEX IF NOT EXISTS urls_short_code_idx
-          ON urls (short_code);
-        `);
-
         return pool;
       },
     },
