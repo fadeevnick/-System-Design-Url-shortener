@@ -1,0 +1,8 @@
+aws_region = "eu-central-1"
+
+github_repository  = "fadeevnick/-System-Design-Url-shortener"
+github_tag_pattern = "v*"
+
+platform_state_bucket = "replace-with-terraform-state-bucket"
+platform_state_key    = "url-shortener/aws-platform.tfstate"
+platform_state_region = "eu-central-1"

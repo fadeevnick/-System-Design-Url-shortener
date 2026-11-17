@@ -8,6 +8,7 @@ every architecture.
 bootstrap/aws/       Terraform backend bootstrap
 aws-platform/        shared AWS resources
 load-test-aws/       reusable AWS load generator
+github-actions-ecr/  GitHub OIDC role for publishing to existing ECR
 compose-ec2/         one EC2 host with Compose
 compose-ec2-alb/     two EC2 hosts with Compose behind an ALB
 ecs-ec2/             future ECS on EC2 experiment
