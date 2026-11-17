@@ -69,10 +69,9 @@ export class UrlsController {
 
   private statusFromError(error: unknown): number {
     if (typeof error === 'object' && error !== null && 'getStatus' in error) {
-      const getStatus = (error as { getStatus: () => number }).getStatus;
-      return getStatus();
+      return (error as { getStatus: () => number }).getStatus();
+    } else {
+      return 500;
     }
-
-    return 500;
   }
 }
